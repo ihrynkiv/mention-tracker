@@ -1,11 +1,12 @@
-// Firebase configuration - Replace with your actual Firebase config
+// Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY", // Replace with your Firebase API key
+    apiKey: "AIzaSyCDxuqukT6Zg008fjAmxwITy-dWAnyQaIo",
     authDomain: "mishatracker-2e4c8.firebaseapp.com",
     projectId: "mishatracker-2e4c8",
-    storageBucket: "mishatracker-2e4c8.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your sender ID
-    appId: "YOUR_APP_ID" // Replace with your app ID
+    storageBucket: "mishatracker-2e4c8.firebasestorage.app",
+    messagingSenderId: "852587848079",
+    appId: "1:852587848079:web:f7a7fe308ccdb01e352bfa",
+    measurementId: "G-B8ZM2GR8BS"
 };
 
 // Initialize Firebase
