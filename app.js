@@ -124,9 +124,9 @@ async function recordMention() {
     
     try {
         const now = new Date();
-        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
         
-        // Check if user has clicked within the last hour (no timestamp filter to avoid index)
+        // Check if user has clicked within the last 5 minutes (no timestamp filter to avoid index)
         const userMentionsQuery = await db.collection('userMentions')
             .where('mentionedBy', '==', currentUser)
             .get();
@@ -141,7 +141,7 @@ async function recordMention() {
             
             if (timestamp) {
                 const clickTime = timestamp.toDate();
-                if (clickTime > oneHourAgo) {
+                if (clickTime > fiveMinutesAgo) {
                     if (!recentTimestamp || clickTime > recentTimestamp) {
                         recentTimestamp = clickTime;
                         recentMention = data;
@@ -152,9 +152,15 @@ async function recordMention() {
         
         if (recentMention && recentTimestamp) {
             const timeDiff = now - recentTimestamp;
-            const minutesLeft = Math.ceil((60 * 60 * 1000 - timeDiff) / (60 * 1000));
+            const secondsLeft = Math.ceil((5 * 60 * 1000 - timeDiff) / 1000);
+            const minutesLeft = Math.floor(secondsLeft / 60);
+            const remainingSeconds = secondsLeft % 60;
             
-            showNotification(`Зачекайте ще ${minutesLeft} хвилин перед наступним кліком! ⏰`, 'error');
+            if (minutesLeft > 0) {
+                showNotification(`Зачекайте ще ${minutesLeft}:${remainingSeconds.toString().padStart(2, '0')} перед наступним кліком! ⏰`, 'error');
+            } else {
+                showNotification(`Зачекайте ще ${remainingSeconds} секунд перед наступним кліком! ⏰`, 'error');
+            }
             return;
         }
         
@@ -339,7 +345,7 @@ async function checkButtonCooldown() {
     
     try {
         const now = new Date();
-        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
         
         // Get all mentions by this user (no timestamp filter to avoid index requirement)
         const userMentionsQuery = await db.collection('userMentions')
@@ -350,7 +356,7 @@ async function checkButtonCooldown() {
         const cooldownMessage = document.getElementById('cooldownMessage');
         if (!button) return;
         
-        // Find most recent mention within last hour
+        // Find most recent mention within last 5 minutes
         let mostRecentMention = null;
         let mostRecentTimestamp = null;
         
@@ -361,8 +367,8 @@ async function checkButtonCooldown() {
             if (timestamp) {
                 const clickTime = timestamp.toDate();
                 
-                // Only consider mentions within the last hour
-                if (clickTime > oneHourAgo) {
+                // Only consider mentions within the last 5 minutes
+                if (clickTime > fiveMinutesAgo) {
                     if (!mostRecentTimestamp || clickTime > mostRecentTimestamp) {
                         mostRecentTimestamp = clickTime;
                         mostRecentMention = data;
@@ -373,11 +379,12 @@ async function checkButtonCooldown() {
         
         if (mostRecentMention && mostRecentTimestamp) {
             const timeDiff = now - mostRecentTimestamp;
-            const timeLeft = 60 * 60 * 1000 - timeDiff;
+            const timeLeft = 5 * 60 * 1000 - timeDiff; // 5 minutes in milliseconds
             
             if (timeLeft > 0) {
-                const minutesLeft = Math.floor(timeLeft / (60 * 1000));
-                const secondsLeft = Math.ceil((timeLeft % (60 * 1000)) / 1000);
+                const totalSecondsLeft = Math.ceil(timeLeft / 1000);
+                const minutesLeft = Math.floor(totalSecondsLeft / 60);
+                const secondsLeft = totalSecondsLeft % 60;
                 
                 // Show countdown in button
                 if (minutesLeft > 0) {
@@ -487,35 +494,35 @@ const ACHIEVEMENTS = [
         id: 'sinabon',
         icon: '🧁',
         title: 'Сінабон',
-        description: 'Досягніть 1 день стрейку',
+        description: 'Досягніть 1 день страйку',
         requirement: { type: 'streak', value: 1 }
     },
     {
         id: 'small_cocoa',
         icon: '☕',
         title: 'Маленьке какао',
-        description: 'Досягніть 5 днів стрейку',
+        description: 'Досягніть 5 днів страйку',
         requirement: { type: 'streak', value: 5 }
     },
     {
         id: 'currant_tea',
         icon: '🫖',
         title: 'Горнятко чаю зі смородиною',
-        description: 'Досягніть 10 днів стрейку',
+        description: 'Досягніть 10 днів страйку',
         requirement: { type: 'streak', value: 10 }
     },
     {
         id: 'bergamot_tea',
         icon: '🍵',
         title: 'Чай чорний з бергамотом',
-        description: 'Досягніть 20 днів стрейку',
+        description: 'Досягніть 20 днів страйку',
         requirement: { type: 'streak', value: 20 }
     },
     {
         id: 'big_cocoa',
         icon: '🍫',
         title: 'Велике какао',
-        description: 'Досягніть 30 днів стрейку',
+        description: 'Досягніть 30 днів страйку',
         requirement: { type: 'streak', value: 30 }
     },
     {
