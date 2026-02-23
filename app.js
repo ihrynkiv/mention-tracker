@@ -662,11 +662,11 @@ const PERSONAL_ACHIEVEMENTS = [
         requirement: { type: 'streak', value: 30 }
     },
     {
-        id: 'personal_nobody_remembered',
+        id: 'personal_forgot_mykhailo',
         icon: '😢',
-        title: 'Його ніхто не згадав',
-        description: 'Протягом дня ніхто не згадав Михайла (краще не відкривати)',
-        requirement: { type: 'day_gap', value: 1 }
+        title: 'Ти забув про Михайла',
+        description: 'Не згадати Михайла протягом дня (краще не відкривати)',
+        requirement: { type: 'personal_day_skip', value: 1 }
     },
     {
         id: 'legend',
@@ -751,6 +751,8 @@ async function checkPersonalAchievements() {
                 isUnlocked = currentStreak >= achievement.requirement.value;
             } else if (achievement.requirement.type === 'daily_first') {
                 isUnlocked = userDailyFirstCount >= achievement.requirement.value;
+            } else if (achievement.requirement.type === 'personal_day_skip') {
+                isUnlocked = await checkPersonalDaySkip();
             }
             
             // If achievement is unlocked and not yet recorded
@@ -786,6 +788,57 @@ async function getUserDailyFirstCount() {
     } catch (error) {
         console.error('Error getting daily first count:', error);
         return 0;
+    }
+}
+
+async function checkPersonalDaySkip() {
+    try {
+        // Check if this user has skipped any days (day-based, not 24-hour based)
+        const userMentions = await db.collection('userMentions')
+            .where('mentionedBy', '==', currentUser)
+            .get();
+        
+        if (userMentions.empty) {
+            return false; // No mentions yet, can't have skipped
+        }
+        
+        // Get all dates this user mentioned (as date strings)
+        const mentionDates = new Set();
+        userMentions.forEach(doc => {
+            const data = doc.data();
+            if (data.date) {
+                mentionDates.add(data.date);
+            }
+        });
+        
+        // Convert to sorted array of actual Date objects for easier comparison
+        const sortedDates = Array.from(mentionDates)
+            .map(dateStr => new Date(dateStr))
+            .sort((a, b) => a - b);
+        
+        if (sortedDates.length < 2) {
+            return false; // Need at least 2 mention days to have a gap
+        }
+        
+        // Check for gaps of more than 1 day between consecutive mention days
+        for (let i = 1; i < sortedDates.length; i++) {
+            const prevDate = sortedDates[i - 1];
+            const currDate = sortedDates[i];
+            
+            // Calculate difference in days (not hours)
+            const timeDiff = currDate - prevDate;
+            const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            
+            // If there's a gap of more than 1 day, user forgot Mykhailo
+            if (daysDiff > 1) {
+                return true;
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking personal day skip:', error);
+        return false;
     }
 }
 
