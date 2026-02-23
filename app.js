@@ -115,7 +115,7 @@ async function authenticateUser(username, password) {
                     normalizedUsername: normalizedUsername,
                     password: userData.password,
                     createdAt: userData.createdAt,
-                    mentionCount: userData.mentionCount
+                    mentionCount: userData.mentionCount || 0
                 });
                 
                 // Delete old document
@@ -359,9 +359,15 @@ async function loadDailyLegend() {
                 }
             });
             
-            if (earliestMention) {
+            if (earliestMention && earliestTimestamp) {
                 const firstMentioner = earliestMention.mentionedBy;
-                legendElement.textContent = `Легенда дня: ${firstMentioner} 👑`;
+                const clickTime = earliestTimestamp.toDate();
+                const timeString = clickTime.toLocaleTimeString('uk-UA', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                legendElement.innerHTML = `Легенда дня: ${firstMentioner} 👑<br>Згадано о ${timeString}`;
             } else {
                 legendElement.textContent = 'Будь першою хто згадав сьогодні!';
             }
