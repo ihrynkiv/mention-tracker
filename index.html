@@ -54,7 +54,13 @@
 
             <div class="tab-content" id="achievementsTab" style="display: none;">
                 <div class="achievements-content">
-                    <h2>Досягнення</h2>
+                    <div class="achievements-header">
+                        <h2>Досягнення</h2>
+                        <div class="achievement-switcher">
+                            <button class="switcher-btn active" onclick="switchAchievements('global')">Загальні</button>
+                            <button class="switcher-btn" onclick="switchAchievements('personal')">Мої</button>
+                        </div>
+                    </div>
                     <div id="achievementsList" class="achievements-list"></div>
                 </div>
             </div>

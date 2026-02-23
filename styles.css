@@ -333,11 +333,50 @@ body {
     padding: 20px 0;
 }
 
+.achievements-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
 .achievements-content h2 {
     font-size: 2em;
-    margin-bottom: 30px;
     color: #333;
-    text-align: center;
+    margin: 0;
+}
+
+.achievement-switcher {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 25px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.switcher-btn {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+.switcher-btn.active {
+    background: #667eea;
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.switcher-btn:hover:not(.active) {
+    background: #e9ecef;
+    color: #333;
 }
 
 .achievements-list {

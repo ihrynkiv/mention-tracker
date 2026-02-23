@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
     loadTodayStatus();
     loadDailyLegend();
     checkButtonCooldown();
+    
+    // Load saved achievement view
+    const savedView = localStorage.getItem('achievementView') || 'global';
+    currentAchievementView = savedView;
 });
 
 // Authentication functions
@@ -245,6 +249,7 @@ async function recordMention() {
             loadTodayStatus();
             loadDailyLegend();
             checkAchievements();
+            checkPersonalAchievements();
             checkButtonCooldown();
             checkDayGapAchievement();
         }, 500);
@@ -528,8 +533,11 @@ async function checkDayGapAchievement() {
     }
 }
 
-// Achievements system
-const ACHIEVEMENTS = [
+// Global variables for achievements
+let currentAchievementView = 'global';
+
+// Global achievements system
+const GLOBAL_ACHIEVEMENTS = [
     {
         id: 'sinabon',
         icon: '🧁',
@@ -588,6 +596,66 @@ const ACHIEVEMENTS = [
     }
 ];
 
+// Personal achievements system (excluding group achievements)
+const PERSONAL_ACHIEVEMENTS = [
+    {
+        id: 'personal_sinabon',
+        icon: '🧁',
+        title: 'Сінабон',
+        description: 'Досягніть 1 день стрейку',
+        requirement: { type: 'streak', value: 1 }
+    },
+    {
+        id: 'personal_small_cocoa',
+        icon: '☕',
+        title: 'Маленьке какао',
+        description: 'Досягніть 5 днів стрейку',
+        requirement: { type: 'streak', value: 5 }
+    },
+    {
+        id: 'personal_currant_tea',
+        icon: '🫖',
+        title: 'Горнятко чаю зі смородиною',
+        description: 'Досягніть 10 днів стрейку',
+        requirement: { type: 'streak', value: 10 }
+    },
+    {
+        id: 'personal_bergamot_tea',
+        icon: '🍵',
+        title: 'Чай чорний з бергамотом',
+        description: 'Досягніть 20 днів стрейку',
+        requirement: { type: 'streak', value: 20 }
+    },
+    {
+        id: 'personal_big_cocoa',
+        icon: '🍫',
+        title: 'Велике какао',
+        description: 'Досягніть 30 днів стрейку',
+        requirement: { type: 'streak', value: 30 }
+    },
+    {
+        id: 'personal_nobody_remembered',
+        icon: '😢',
+        title: 'Його ніхто не згадав',
+        description: 'Протягом дня ніхто не згадав Михайла (краще не відкривати)',
+        requirement: { type: 'day_gap', value: 1 }
+    },
+    {
+        id: 'legend',
+        icon: '⚡',
+        title: 'Легенда',
+        description: 'Найшвидше згадати Михайла (стати легендою дня)',
+        requirement: { type: 'daily_first', value: 1 }
+    },
+    {
+        id: 'fanatic',
+        icon: '🔥',
+        title: 'Фанат',
+        description: 'Три рази найшвидше згадати Михайла',
+        requirement: { type: 'daily_first', value: 3 }
+    }
+];
+
 async function checkAchievements() {
     try {
         // Get current streak
@@ -607,7 +675,7 @@ async function checkAchievements() {
         const totalClicksToday = todayMentions.size;
         
         // Check each achievement
-        for (const achievement of ACHIEVEMENTS) {
+        for (const achievement of GLOBAL_ACHIEVEMENTS) {
             const achievementDoc = await db.collection('achievements').doc(achievement.id).get();
             
             let isUnlocked = false;
@@ -635,26 +703,122 @@ async function checkAchievements() {
     }
 }
 
+async function checkPersonalAchievements() {
+    if (!currentUser) return;
+    
+    try {
+        // Get current streak and user's daily first counts
+        const currentStreak = parseInt(document.getElementById('streakCount').textContent) || 0;
+        
+        // Get user's daily first count (how many times they were first)
+        const userDailyFirstCount = await getUserDailyFirstCount();
+        
+        // Check each personal achievement
+        for (const achievement of PERSONAL_ACHIEVEMENTS) {
+            const achievementDoc = await db.collection('personalAchievements').doc(`${currentUser}_${achievement.id}`).get();
+            
+            let isUnlocked = false;
+            
+            if (achievement.requirement.type === 'streak') {
+                isUnlocked = currentStreak >= achievement.requirement.value;
+            } else if (achievement.requirement.type === 'daily_first') {
+                isUnlocked = userDailyFirstCount >= achievement.requirement.value;
+            }
+            
+            // If achievement is unlocked and not yet recorded
+            if (isUnlocked && !achievementDoc.exists) {
+                await db.collection('personalAchievements').doc(`${currentUser}_${achievement.id}`).set({
+                    achievementId: achievement.id,
+                    username: currentUser,
+                    unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    unlockedDate: new Date().toLocaleDateString('uk-UA')
+                });
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error checking personal achievements:', error);
+    }
+}
+
+async function getUserDailyFirstCount() {
+    try {
+        // Count how many days this user was the daily legend
+        const allMentions = await db.collection('mentions').get();
+        let dailyFirstCount = 0;
+        
+        allMentions.forEach(doc => {
+            const data = doc.data();
+            if (data.firstMentionBy === currentUser) {
+                dailyFirstCount++;
+            }
+        });
+        
+        return dailyFirstCount;
+    } catch (error) {
+        console.error('Error getting daily first count:', error);
+        return 0;
+    }
+}
+
+function switchAchievements(type) {
+    currentAchievementView = type;
+    localStorage.setItem('achievementView', type);
+    
+    // Update button states
+    document.querySelectorAll('.switcher-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (type === 'global') {
+        document.querySelectorAll('.switcher-btn')[0].classList.add('active');
+    } else {
+        document.querySelectorAll('.switcher-btn')[1].classList.add('active');
+    }
+    
+    // Reload achievements
+    loadAchievements();
+}
+
 async function loadAchievements() {
     try {
         const achievementsContainer = document.getElementById('achievementsList');
         achievementsContainer.innerHTML = '';
         
+        const achievements = currentAchievementView === 'global' ? GLOBAL_ACHIEVEMENTS : PERSONAL_ACHIEVEMENTS;
+        const collectionName = currentAchievementView === 'global' ? 'achievements' : 'personalAchievements';
+        
         // Get unlocked achievements
-        const unlockedAchievements = await db.collection('achievements').get();
+        let unlockedAchievements;
+        if (currentAchievementView === 'global') {
+            unlockedAchievements = await db.collection(collectionName).get();
+        } else {
+            // For personal achievements, filter by current user
+            unlockedAchievements = await db.collection(collectionName)
+                .where('username', '==', currentUser)
+                .get();
+        }
+        
         const unlockedIds = new Set();
         const unlockedData = {};
         
         unlockedAchievements.forEach(doc => {
             const data = doc.data();
-            unlockedIds.add(doc.id);
-            unlockedData[doc.id] = data;
+            if (currentAchievementView === 'personal') {
+                // Extract achievement ID from document ID (format: "username_achievementId")
+                const achievementId = data.achievementId;
+                unlockedIds.add(achievementId);
+                unlockedData[achievementId] = data;
+            } else {
+                unlockedIds.add(doc.id);
+                unlockedData[doc.id] = data;
+            }
         });
         
         // Create achievement items
-        for (const achievement of ACHIEVEMENTS) {
+        for (const achievement of achievements) {
             const isUnlocked = unlockedIds.has(achievement.id);
-            const isSadAchievement = achievement.id === 'nobody_remembered';
+            const isSadAchievement = achievement.id === 'nobody_remembered' || achievement.id === 'personal_nobody_remembered';
             
             const achievementEl = document.createElement('div');
             let className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
@@ -809,6 +973,21 @@ function showTab(tabName) {
     } else if (tabName === 'achievements') {
         document.getElementById('achievementsTab').style.display = 'block';
         document.querySelectorAll('.tab-button')[2].classList.add('active');
+        
+        // Set the correct button state based on saved view
+        const savedView = localStorage.getItem('achievementView') || 'global';
+        currentAchievementView = savedView;
+        
+        document.querySelectorAll('.switcher-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        if (savedView === 'global') {
+            document.querySelectorAll('.switcher-btn')[0].classList.add('active');
+        } else {
+            document.querySelectorAll('.switcher-btn')[1].classList.add('active');
+        }
+        
         loadAchievements();
     }
 }
