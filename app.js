@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthState();
     loadStreakCount();
     loadTodayStatus();
+    loadDailyLegend();
 });
 
 // Authentication functions
@@ -165,6 +166,7 @@ async function recordMention() {
         setTimeout(() => {
             loadStreakCount();
             loadTodayStatus();
+            loadDailyLegend();
             checkAchievements();
         }, 500);
         
@@ -249,6 +251,27 @@ async function loadTodayStatus() {
     } catch (error) {
         console.error('Error loading today status:', error);
         document.getElementById('todayStatus').textContent = '😴';
+    }
+}
+
+async function loadDailyLegend() {
+    try {
+        const today = new Date().toDateString();
+        const todayDoc = await db.collection('mentions').doc(today).get();
+        
+        const legendElement = document.getElementById('dailyLegend');
+        
+        if (todayDoc.exists) {
+            const todayData = todayDoc.data();
+            const firstMentioner = todayData.firstMentionBy;
+            legendElement.textContent = `Легенда дня: ${firstMentioner} 👑`;
+        } else {
+            legendElement.textContent = 'Будь першою хто згадав сьогодні!';
+        }
+        
+    } catch (error) {
+        console.error('Error loading daily legend:', error);
+        document.getElementById('dailyLegend').textContent = 'Будь першою хто згадав сьогодні!';
     }
 }
 

@@ -162,6 +162,21 @@ body {
     box-shadow: 0 15px 40px rgba(86, 171, 47, 0.4);
 }
 
+.daily-legend {
+    margin-top: 30px;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border: 2px solid #f1c40f;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(241, 196, 15, 0.3);
+    display: inline-block;
+    min-width: 300px;
+}
+
 .fireworks-container {
     position: fixed;
     top: 0;
