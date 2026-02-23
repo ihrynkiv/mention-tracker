@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misha Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-section" id="authSection">
+            <h1>🔥 Misha Tracker</h1>
+            <div class="auth-form">
+                <input type="text" id="username" placeholder="Введіть ім'я користувача" required>
+                <input type="password" id="password" placeholder="Введіть пароль" required>
+                <div class="auth-buttons">
+                    <button onclick="login()">Увійти</button>
+                    <button onclick="signup()">Зареєструватися</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-section" id="mainSection" style="display: none;">
+            <div class="streak-counter">
+                🔥 <span id="streakCount">0</span>
+            </div>
+            
+            <nav class="tabs">
+                <button class="tab-button active" onclick="showTab('tracking')">Трекінг</button>
+                <button class="tab-button" onclick="showTab('stats')">Статистика</button>
+            </nav>
+
+            <div class="tab-content" id="trackingTab">
+                <div class="tracking-content">
+                    <h2>Згадали Михайла?</h2>
+                    <button class="yes-button" onclick="recordMention()">Так! 🎉</button>
+                    <div id="fireworks" class="fireworks-container"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="statsTab" style="display: none;">
+                <div class="stats-content">
+                    <h2>Найчастіше згадують:</h2>
+                    <div id="userStats" class="user-stats"></div>
+                </div>
+            </div>
+
+            <div class="user-info">
+                Увійшли як: <span id="currentUser"></span>
+                <button onclick="logout()">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
