@@ -205,6 +205,7 @@ async function recordMention() {
             loadDailyLegend();
             checkAchievements();
             checkButtonCooldown();
+            checkDayGapAchievement();
         }, 500);
         
     } catch (error) {
@@ -414,6 +415,72 @@ async function checkButtonCooldown() {
     }
 }
 
+async function checkDayGapAchievement() {
+    try {
+        // Check if sad achievement is already unlocked
+        const achievementDoc = await db.collection('achievements').doc('nobody_remembered').get();
+        if (achievementDoc.exists) {
+            return; // Already unlocked
+        }
+        
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+        
+        // Get all mentions (no orderBy to avoid index requirement)
+        const allMentionsQuery = await db.collection('userMentions')
+            .get();
+        
+        if (allMentionsQuery.empty) {
+            return; // No mentions yet
+        }
+        
+        const mentions = [];
+        allMentionsQuery.forEach(doc => {
+            const data = doc.data();
+            if (data.timestamp) {
+                mentions.push({
+                    date: data.date,
+                    timestamp: data.timestamp.toDate()
+                });
+            }
+        });
+        
+        // Sort by timestamp ascending to check chronologically
+        mentions.sort((a, b) => a.timestamp - b.timestamp);
+        
+        // Check for gaps of more than 24 hours between consecutive mentions
+        for (let i = 1; i < mentions.length; i++) {
+            const currentMention = mentions[i];
+            const previousMention = mentions[i - 1];
+            
+            const timeDiff = currentMention.timestamp - previousMention.timestamp;
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+            
+            // If gap is more than 24 hours, unlock the sad achievement
+            if (hoursDiff > 24) {
+                await db.collection('achievements').doc('nobody_remembered').set({
+                    achievementId: 'nobody_remembered',
+                    unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    unlockedDate: new Date().toLocaleDateString('uk-UA'),
+                    gapStart: previousMention.date,
+                    gapEnd: currentMention.date,
+                    hoursBetween: Math.floor(hoursDiff)
+                });
+                
+                // Show a sad notification
+                setTimeout(() => {
+                    showNotification('😢 Досягнення відкрито: "Його ніхто не згадав"', 'success');
+                }, 2000);
+                
+                break;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error checking day gap achievement:', error);
+    }
+}
+
 // Achievements system
 const ACHIEVEMENTS = [
     {
@@ -464,6 +531,13 @@ const ACHIEVEMENTS = [
         title: 'Володар перснів',
         description: 'Натиснути кнопку 24 рази протягом одного дня (сумарно серед усіх людей)',
         requirement: { type: 'daily_total_clicks', value: 24 }
+    },
+    {
+        id: 'nobody_remembered',
+        icon: '😢',
+        title: 'Його ніхто не згадав',
+        description: 'Протягом дня ніхто не згадав Михайла (краще не відкривати)',
+        requirement: { type: 'day_gap', value: 1 }
     }
 ];
 
@@ -533,13 +607,23 @@ async function loadAchievements() {
         // Create achievement items
         for (const achievement of ACHIEVEMENTS) {
             const isUnlocked = unlockedIds.has(achievement.id);
+            const isSadAchievement = achievement.id === 'nobody_remembered';
             
             const achievementEl = document.createElement('div');
-            achievementEl.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+            let className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+            if (isSadAchievement && isUnlocked) {
+                className += ' sad';
+            }
+            achievementEl.className = className;
             
-            const statusText = isUnlocked 
+            let statusText = isUnlocked 
                 ? `Відкрито: ${unlockedData[achievement.id].unlockedDate}`
                 : 'Заблоковано';
+            
+            // Add extra info for sad achievement
+            if (isSadAchievement && isUnlocked && unlockedData[achievement.id].hoursBetween) {
+                statusText += ` (${unlockedData[achievement.id].hoursBetween} годин пропуску)`;
+            }
             
             achievementEl.innerHTML = `
                 <div class="achievement-icon">${achievement.icon}</div>
