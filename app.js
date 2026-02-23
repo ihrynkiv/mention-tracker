@@ -258,35 +258,35 @@ const ACHIEVEMENTS = [
         id: 'sinabon',
         icon: '🧁',
         title: 'Сінабон',
-        description: 'Досягни 1 день стрейку',
+        description: 'Досягніть 1 день стрейку',
         requirement: { type: 'streak', value: 1 }
     },
     {
         id: 'small_cocoa',
         icon: '☕',
         title: 'Маленьке какао',
-        description: 'Досягни 5 днів стрейку',
+        description: 'Досягніть 5 днів стрейку',
         requirement: { type: 'streak', value: 5 }
     },
     {
         id: 'currant_tea',
         icon: '🫖',
         title: 'Горнятко чаю зі смородиною',
-        description: 'Досягни 10 днів стрейку',
+        description: 'Досягніть 10 днів стрейку',
         requirement: { type: 'streak', value: 10 }
     },
     {
         id: 'bergamot_tea',
         icon: '🍵',
         title: 'Чай чорний з бергамотом',
-        description: 'Досягни 20 днів стрейку',
+        description: 'Досягніть 20 днів стрейку',
         requirement: { type: 'streak', value: 20 }
     },
     {
         id: 'big_cocoa',
         icon: '🍫',
         title: 'Велике какао',
-        description: 'Досягни 30 днів стрейку',
+        description: 'Досягніть 30 днів стрейку',
         requirement: { type: 'streak', value: 30 }
     },
     {
