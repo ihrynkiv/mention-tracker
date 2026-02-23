@@ -131,7 +131,7 @@ async function recordMention() {
             .where('mentionedBy', '==', currentUser)
             .get();
         
-        // Find most recent mention within last hour
+        // Find most recent mention by this user
         let recentMention = null;
         let recentTimestamp = null;
         
@@ -141,27 +141,31 @@ async function recordMention() {
             
             if (timestamp) {
                 const clickTime = timestamp.toDate();
-                if (clickTime > fiveMinutesAgo) {
-                    if (!recentTimestamp || clickTime > recentTimestamp) {
-                        recentTimestamp = clickTime;
-                        recentMention = data;
-                    }
+                // Find the most recent mention regardless of time
+                if (!recentTimestamp || clickTime > recentTimestamp) {
+                    recentTimestamp = clickTime;
+                    recentMention = data;
                 }
             }
         });
         
         if (recentMention && recentTimestamp) {
             const timeDiff = now - recentTimestamp;
-            const secondsLeft = Math.ceil((5 * 60 * 1000 - timeDiff) / 1000);
-            const minutesLeft = Math.floor(secondsLeft / 60);
-            const remainingSeconds = secondsLeft % 60;
             
-            if (minutesLeft > 0) {
-                showNotification(`Зачекайте ще ${minutesLeft}:${remainingSeconds.toString().padStart(2, '0')} перед наступним кліком! ⏰`, 'error');
-            } else {
-                showNotification(`Зачекайте ще ${remainingSeconds} секунд перед наступним кліком! ⏰`, 'error');
+            // Only block if the last click was within 5 minutes
+            if (timeDiff < 5 * 60 * 1000) {
+                const timeLeft = 5 * 60 * 1000 - timeDiff;
+                const secondsLeft = Math.ceil(timeLeft / 1000);
+                const minutesLeft = Math.floor(secondsLeft / 60);
+                const remainingSeconds = secondsLeft % 60;
+                
+                if (minutesLeft > 0) {
+                    showNotification(`Зачекайте ще ${minutesLeft}:${remainingSeconds.toString().padStart(2, '0')} перед наступним кліком! ⏰`, 'error');
+                } else {
+                    showNotification(`Зачекайте ще ${remainingSeconds} секунд перед наступним кліком! ⏰`, 'error');
+                }
+                return;
             }
-            return;
         }
         
         const today = new Date().toDateString();
@@ -356,7 +360,7 @@ async function checkButtonCooldown() {
         const cooldownMessage = document.getElementById('cooldownMessage');
         if (!button) return;
         
-        // Find most recent mention within last 5 minutes
+        // Find most recent mention by this user (regardless of when)
         let mostRecentMention = null;
         let mostRecentTimestamp = null;
         
@@ -367,12 +371,10 @@ async function checkButtonCooldown() {
             if (timestamp) {
                 const clickTime = timestamp.toDate();
                 
-                // Only consider mentions within the last 5 minutes
-                if (clickTime > fiveMinutesAgo) {
-                    if (!mostRecentTimestamp || clickTime > mostRecentTimestamp) {
-                        mostRecentTimestamp = clickTime;
-                        mostRecentMention = data;
-                    }
+                // Find the most recent mention regardless of time
+                if (!mostRecentTimestamp || clickTime > mostRecentTimestamp) {
+                    mostRecentTimestamp = clickTime;
+                    mostRecentMention = data;
                 }
             }
         });
@@ -381,7 +383,8 @@ async function checkButtonCooldown() {
             const timeDiff = now - mostRecentTimestamp;
             const timeLeft = 5 * 60 * 1000 - timeDiff; // 5 minutes in milliseconds
             
-            if (timeLeft > 0) {
+            // Only show cooldown if the last click was within 5 minutes
+            if (timeLeft > 0 && timeDiff < 5 * 60 * 1000) {
                 const totalSecondsLeft = Math.ceil(timeLeft / 1000);
                 const minutesLeft = Math.floor(totalSecondsLeft / 60);
                 const secondsLeft = totalSecondsLeft % 60;
