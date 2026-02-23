@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadStreakCount();
     loadTodayStatus();
     loadDailyLegend();
+    checkButtonCooldown();
 });
 
 // Authentication functions
@@ -122,6 +123,26 @@ async function recordMention() {
     }
     
     try {
+        const now = new Date();
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
+        
+        // Check if user has clicked within the last hour
+        const recentMentionsQuery = await db.collection('userMentions')
+            .where('mentionedBy', '==', currentUser)
+            .where('timestamp', '>', oneHourAgo)
+            .limit(1)
+            .get();
+        
+        if (!recentMentionsQuery.empty) {
+            const lastMention = recentMentionsQuery.docs[0].data();
+            const lastClickTime = lastMention.timestamp.toDate();
+            const timeDiff = now - lastClickTime;
+            const minutesLeft = Math.ceil((60 * 60 * 1000 - timeDiff) / (60 * 1000));
+            
+            showNotification(`Зачекайте ще ${minutesLeft} хвилин перед наступним кліком! ⏰`, 'error');
+            return;
+        }
+        
         const today = new Date().toDateString();
         const timestamp = new Date();
         
@@ -168,6 +189,7 @@ async function recordMention() {
             loadTodayStatus();
             loadDailyLegend();
             checkAchievements();
+            checkButtonCooldown();
         }, 500);
         
     } catch (error) {
@@ -293,6 +315,59 @@ async function loadDailyLegend() {
     } catch (error) {
         console.error('Error loading daily legend:', error);
         document.getElementById('dailyLegend').textContent = 'Будь першою хто згадав сьогодні!';
+    }
+}
+
+async function checkButtonCooldown() {
+    if (!currentUser) return;
+    
+    try {
+        const now = new Date();
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+        
+        const recentMentionsQuery = await db.collection('userMentions')
+            .where('mentionedBy', '==', currentUser)
+            .where('timestamp', '>', oneHourAgo)
+            .limit(1)
+            .get();
+        
+        const button = document.querySelector('.yes-button');
+        const cooldownMessage = document.getElementById('cooldownMessage');
+        if (!button) return;
+        
+        if (!recentMentionsQuery.empty) {
+            const lastMention = recentMentionsQuery.docs[0].data();
+            const lastClickTime = lastMention.timestamp.toDate();
+            const timeDiff = now - lastClickTime;
+            const timeLeft = 60 * 60 * 1000 - timeDiff;
+            const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
+            const secondsLeft = Math.ceil((timeLeft % (60 * 1000)) / 1000);
+            
+            // Show countdown in button
+            if (minutesLeft > 0) {
+                button.textContent = `⏰ ${minutesLeft}:${secondsLeft.toString().padStart(2, '0')}`;
+            } else {
+                button.textContent = `⏰ ${secondsLeft}с`;
+            }
+            
+            // Disable button and show message
+            button.disabled = true;
+            cooldownMessage.style.display = 'block';
+            
+            // Set timeout to re-check button state
+            setTimeout(() => {
+                checkButtonCooldown();
+            }, 1000); // Check every second for precise countdown
+            
+        } else {
+            // Enable button and hide message
+            button.disabled = false;
+            button.textContent = 'Так! 🎉';
+            cooldownMessage.style.display = 'none';
+        }
+        
+    } catch (error) {
+        console.error('Error checking button cooldown:', error);
     }
 }
 
@@ -562,6 +637,7 @@ function showMainSection() {
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('mainSection').style.display = 'block';
     document.getElementById('currentUser').textContent = currentUser;
+    checkButtonCooldown();
 }
 
 function clearForm() {

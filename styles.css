@@ -157,9 +157,32 @@ body {
     box-shadow: 0 10px 30px rgba(86, 171, 47, 0.3);
 }
 
-.yes-button:hover {
+.yes-button:hover:not(:disabled) {
     transform: translateY(-5px) scale(1.05);
     box-shadow: 0 15px 40px rgba(86, 171, 47, 0.4);
+}
+
+.yes-button:disabled {
+    background: linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%);
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+}
+
+.cooldown-message {
+    margin: 20px auto;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%);
+    border: 2px solid #3498db;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2980b9;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.4;
+    box-shadow: 0 3px 10px rgba(52, 152, 219, 0.2);
 }
 
 .daily-legend {
