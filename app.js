@@ -64,16 +64,19 @@ function logout() {
 // Database functions
 async function createUser(username, password) {
     try {
-        // Check if username already exists
-        const userDoc = await db.collection('users').doc(username).get();
+        const normalizedUsername = username.toLowerCase();
+        
+        // Check if username already exists (case-insensitive)
+        const userDoc = await db.collection('users').doc(normalizedUsername).get();
         if (userDoc.exists) {
             showNotification('Користувач з таким іменем вже існує', 'error');
             return;
         }
         
-        // Create new user
-        await db.collection('users').doc(username).set({
-            username: username,
+        // Create new user with normalized username as document ID
+        await db.collection('users').doc(normalizedUsername).set({
+            username: username, // Store original username for display
+            normalizedUsername: normalizedUsername, // Store normalized for lookups
             password: password, // In real app, this should be hashed
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             mentionCount: 0
@@ -92,7 +95,9 @@ async function createUser(username, password) {
 
 async function authenticateUser(username, password) {
     try {
-        const userDoc = await db.collection('users').doc(username).get();
+        const normalizedUsername = username.toLowerCase();
+        
+        const userDoc = await db.collection('users').doc(normalizedUsername).get();
         if (!userDoc.exists) {
             showNotification('Користувача не знайдено', 'error');
             return;
@@ -104,8 +109,9 @@ async function authenticateUser(username, password) {
             return;
         }
         
-        currentUser = username;
-        localStorage.setItem('currentUser', username);
+        // Use the original username from database for display
+        currentUser = userData.username;
+        localStorage.setItem('currentUser', userData.username);
         showNotification('Успішний вхід! 🎉', 'success');
         showMainSection();
         
@@ -181,8 +187,9 @@ async function recordMention() {
             mentionedBy: currentUser
         });
         
-        // Update user's total mention count
-        await db.collection('users').doc(currentUser).update({
+        // Update user's total mention count (use normalized username for document ID)
+        const normalizedCurrentUser = currentUser.toLowerCase();
+        await db.collection('users').doc(normalizedCurrentUser).update({
             mentionCount: firebase.firestore.FieldValue.increment(1)
         });
         
