@@ -414,6 +414,13 @@ const ACHIEVEMENTS = [
         title: 'Всі люблять Михайла',
         description: '5 різних людей натиснули протягом дня кнопку',
         requirement: { type: 'daily_users', value: 5 }
+    },
+    {
+        id: 'ring_lord',
+        icon: '💍',
+        title: 'Володар перснів',
+        description: 'Натиснути кнопку 24 рази протягом одного дня (сумарно серед усіх людей)',
+        requirement: { type: 'daily_total_clicks', value: 24 }
     }
 ];
 
@@ -433,6 +440,8 @@ async function checkAchievements() {
             uniqueUsersToday.add(doc.data().mentionedBy);
         });
         
+        const totalClicksToday = todayMentions.size;
+        
         // Check each achievement
         for (const achievement of ACHIEVEMENTS) {
             const achievementDoc = await db.collection('achievements').doc(achievement.id).get();
@@ -443,6 +452,8 @@ async function checkAchievements() {
                 isUnlocked = currentStreak >= achievement.requirement.value;
             } else if (achievement.requirement.type === 'daily_users') {
                 isUnlocked = uniqueUsersToday.size >= achievement.requirement.value;
+            } else if (achievement.requirement.type === 'daily_total_clicks') {
+                isUnlocked = totalClicksToday >= achievement.requirement.value;
             }
             
             // If achievement is unlocked and not yet recorded
