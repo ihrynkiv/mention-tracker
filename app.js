@@ -301,13 +301,41 @@ async function loadUserStats() {
             return;
         }
         
+        // Get all personal achievements for badge display
+        const personalAchievements = await db.collection('personalAchievements').get();
+        const userBadges = {};
+        
+        personalAchievements.forEach(doc => {
+            const data = doc.data();
+            const username = data.username;
+            const achievementId = data.achievementId;
+            
+            // Find the achievement to get its icon
+            const achievement = PERSONAL_ACHIEVEMENTS.find(a => a.id === achievementId);
+            if (achievement) {
+                if (!userBadges[username]) {
+                    userBadges[username] = [];
+                }
+                userBadges[username].push(achievement.icon);
+            }
+        });
+        
         usersSnapshot.forEach(doc => {
             const userData = doc.data();
             if (userData.mentionCount > 0) {
+                const username = userData.username;
+                const badges = userBadges[username] || [];
+                const badgesHtml = badges.length > 0 
+                    ? `<span class="user-badges">${badges.join('')}</span>` 
+                    : '';
+                
                 const statItem = document.createElement('div');
                 statItem.className = 'user-stat-item';
                 statItem.innerHTML = `
-                    <span class="username">${userData.username}</span>
+                    <div class="username-with-badges">
+                        <span class="username">${username}</span>
+                        ${badgesHtml}
+                    </div>
                     <span class="count">${userData.mentionCount}</span>
                 `;
                 statsContainer.appendChild(statItem);
