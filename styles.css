@@ -182,17 +182,166 @@ body {
 
 @keyframes firework {
     0% {
-        transform: scale(0);
+        transform: scale(0) rotate(0deg);
         opacity: 1;
     }
     50% {
-        transform: scale(1);
+        transform: scale(1) rotate(180deg);
         opacity: 1;
     }
     100% {
-        transform: scale(1.5);
+        transform: scale(2) rotate(360deg);
         opacity: 0;
     }
+}
+
+@keyframes flyUp {
+    0% {
+        transform: translateY(0px) scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-200px) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.fire-emoji {
+    position: absolute;
+    font-size: 30px;
+    animation: flyUp 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 1001;
+}
+
+.success-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    color: white;
+    padding: 30px 50px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 15px 35px rgba(86, 171, 47, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1002;
+    transition: all 0.5s ease;
+}
+
+.success-message.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.auth-error, .success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.5s ease;
+    z-index: 1003;
+}
+
+.auth-error {
+    background: #ff6b6b;
+    color: white;
+}
+
+.success-notification {
+    background: #51cf66;
+    color: white;
+}
+
+.auth-error.show, .success-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.achievements-content {
+    padding: 20px 0;
+}
+
+.achievements-content h2 {
+    font-size: 2em;
+    margin-bottom: 30px;
+    color: #333;
+    text-align: center;
+}
+
+.achievements-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.achievement-item {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid #eee;
+}
+
+.achievement-item.unlocked {
+    background: linear-gradient(135deg, #fff3cd 0%, #d1ecf1 100%);
+    border-color: #667eea;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.achievement-item.locked {
+    opacity: 0.6;
+    filter: grayscale(50%);
+}
+
+.achievement-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.achievement-item.locked .achievement-icon {
+    filter: grayscale(100%);
+}
+
+.achievement-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.achievement-description {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.achievement-status {
+    font-size: 0.9em;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.achievement-status.unlocked {
+    background: #51cf66;
+    color: white;
+}
+
+.achievement-status.locked {
+    background: #dee2e6;
+    color: #6c757d;
 }
 
 .stats-content {

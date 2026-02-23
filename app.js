@@ -21,6 +21,7 @@ let currentUser = null;
 document.addEventListener('DOMContentLoaded', function() {
     checkAuthState();
     loadStreakCount();
+    loadTodayStatus();
 });
 
 // Authentication functions
@@ -29,7 +30,7 @@ function signup() {
     const password = document.getElementById('password').value;
     
     if (!username || !password) {
-        alert('Будь ласка, заповніть всі поля');
+        showNotification('Будь ласка, заповніть всі поля', 'error');
         return;
     }
     
@@ -42,7 +43,7 @@ function login() {
     const password = document.getElementById('password').value;
     
     if (!username || !password) {
-        alert('Будь ласка, заповніть всі поля');
+        showNotification('Будь ласка, заповніть всі поля', 'error');
         return;
     }
     
@@ -53,6 +54,7 @@ function login() {
 function logout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
+    showNotification('До побачення! 👋', 'success');
     showAuthSection();
     clearForm();
 }
@@ -63,7 +65,7 @@ async function createUser(username, password) {
         // Check if username already exists
         const userDoc = await db.collection('users').doc(username).get();
         if (userDoc.exists) {
-            alert('Користувач з таким іменем вже існує');
+            showNotification('Користувач з таким іменем вже існує', 'error');
             return;
         }
         
@@ -77,11 +79,12 @@ async function createUser(username, password) {
         
         currentUser = username;
         localStorage.setItem('currentUser', username);
+        showNotification('Ласкаво просимо! 🎉', 'success');
         showMainSection();
         
     } catch (error) {
         console.error('Error creating user:', error);
-        alert('Помилка при створенні користувача');
+        showNotification('Помилка при створенні користувача', 'error');
     }
 }
 
@@ -89,69 +92,85 @@ async function authenticateUser(username, password) {
     try {
         const userDoc = await db.collection('users').doc(username).get();
         if (!userDoc.exists) {
-            alert('Користувача не знайдено');
+            showNotification('Користувача не знайдено', 'error');
             return;
         }
         
         const userData = userDoc.data();
         if (userData.password !== password) {
-            alert('Невірний пароль');
+            showNotification('Невірний пароль', 'error');
             return;
         }
         
         currentUser = username;
         localStorage.setItem('currentUser', username);
+        showNotification('Успішний вхід! 🎉', 'success');
         showMainSection();
         
     } catch (error) {
         console.error('Error authenticating user:', error);
-        alert('Помилка при вході');
+        showNotification('Помилка при вході', 'error');
     }
 }
 
 // Main app functions
 async function recordMention() {
     if (!currentUser) {
-        alert('Будь ласка, увійдіть в систему');
+        showNotification('Будь ласка, увійдіть в систему', 'error');
         return;
     }
     
     try {
         const today = new Date().toDateString();
+        const timestamp = new Date();
         
-        // Check if already mentioned today
-        const todayDoc = await db.collection('mentions').doc(today).get();
-        if (todayDoc.exists) {
-            alert('Михайла вже згадували сьогодні! 🎉');
-            return;
-        }
+        // Create unique ID for this mention
+        const mentionId = `${today}_${currentUser}_${timestamp.getTime()}`;
         
-        // Record today's mention
-        await db.collection('mentions').doc(today).set({
+        // Record this user's mention for today
+        await db.collection('userMentions').doc(mentionId).set({
             date: today,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             mentionedBy: currentUser
         });
         
-        // Update user's mention count
+        // Update user's total mention count
         await db.collection('users').doc(currentUser).update({
             mentionCount: firebase.firestore.FieldValue.increment(1)
         });
         
-        // Show fireworks
+        // Check if this is the first mention today (for streak tracking)
+        const todayMentionsQuery = await db.collection('userMentions')
+            .where('date', '==', today)
+            .limit(1)
+            .get();
+        
+        const isFirstMentionToday = todayMentionsQuery.size === 1; // Only our mention exists
+        
+        if (isFirstMentionToday) {
+            // Create/update the day record for streak tracking
+            await db.collection('mentions').doc(today).set({
+                date: today,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                firstMentionBy: currentUser
+            });
+        }
+        
+        // Show amazing animations
         showFireworks();
+        showFireEmojis();
+        showBigSuccessMessage('Михайла згадано! 🔥🎉');
         
-        // Update streak count
-        loadStreakCount();
-        
-        // Show success message
+        // Update streak count and today status
         setTimeout(() => {
-            alert('Михайла згадано! 🔥');
-        }, 1000);
+            loadStreakCount();
+            loadTodayStatus();
+            checkAchievements();
+        }, 500);
         
     } catch (error) {
         console.error('Error recording mention:', error);
-        alert('Помилка при записі згадування');
+        showNotification('Помилка при записі згадування', 'error');
     }
 }
 
@@ -215,6 +234,156 @@ async function loadUserStats() {
     }
 }
 
+async function loadTodayStatus() {
+    try {
+        const today = new Date().toDateString();
+        const todayDoc = await db.collection('mentions').doc(today).get();
+        
+        const statusElement = document.getElementById('todayStatus');
+        if (todayDoc.exists) {
+            statusElement.textContent = '😊'; // Happy - someone mentioned today
+        } else {
+            statusElement.textContent = '😴'; // Sad - no mentions today
+        }
+        
+    } catch (error) {
+        console.error('Error loading today status:', error);
+        document.getElementById('todayStatus').textContent = '😴';
+    }
+}
+
+// Achievements system
+const ACHIEVEMENTS = [
+    {
+        id: 'sinabon',
+        icon: '🧁',
+        title: 'Сінабон',
+        description: 'Досягни 1 день стрейку',
+        requirement: { type: 'streak', value: 1 }
+    },
+    {
+        id: 'small_cocoa',
+        icon: '☕',
+        title: 'Маленьке какао',
+        description: 'Досягни 5 днів стрейку',
+        requirement: { type: 'streak', value: 5 }
+    },
+    {
+        id: 'currant_tea',
+        icon: '🫖',
+        title: 'Горнятко чаю зі смородиною',
+        description: 'Досягни 10 днів стрейку',
+        requirement: { type: 'streak', value: 10 }
+    },
+    {
+        id: 'bergamot_tea',
+        icon: '🍵',
+        title: 'Чай чорний з бергамотом',
+        description: 'Досягни 20 днів стрейку',
+        requirement: { type: 'streak', value: 20 }
+    },
+    {
+        id: 'big_cocoa',
+        icon: '🍫',
+        title: 'Велике какао',
+        description: 'Досягни 30 днів стрейку',
+        requirement: { type: 'streak', value: 30 }
+    },
+    {
+        id: 'everyone_loves',
+        icon: '❤️',
+        title: 'Всі люблять Михайла',
+        description: '5 різних людей натиснули протягом дня кнопку',
+        requirement: { type: 'daily_users', value: 5 }
+    }
+];
+
+async function checkAchievements() {
+    try {
+        // Get current streak
+        const currentStreak = parseInt(document.getElementById('streakCount').textContent) || 0;
+        
+        // Get today's unique users
+        const today = new Date().toDateString();
+        const todayMentions = await db.collection('userMentions')
+            .where('date', '==', today)
+            .get();
+        
+        const uniqueUsersToday = new Set();
+        todayMentions.forEach(doc => {
+            uniqueUsersToday.add(doc.data().mentionedBy);
+        });
+        
+        // Check each achievement
+        for (const achievement of ACHIEVEMENTS) {
+            const achievementDoc = await db.collection('achievements').doc(achievement.id).get();
+            
+            let isUnlocked = false;
+            
+            if (achievement.requirement.type === 'streak') {
+                isUnlocked = currentStreak >= achievement.requirement.value;
+            } else if (achievement.requirement.type === 'daily_users') {
+                isUnlocked = uniqueUsersToday.size >= achievement.requirement.value;
+            }
+            
+            // If achievement is unlocked and not yet recorded
+            if (isUnlocked && !achievementDoc.exists) {
+                await db.collection('achievements').doc(achievement.id).set({
+                    achievementId: achievement.id,
+                    unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    unlockedDate: new Date().toLocaleDateString('uk-UA')
+                });
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error checking achievements:', error);
+    }
+}
+
+async function loadAchievements() {
+    try {
+        const achievementsContainer = document.getElementById('achievementsList');
+        achievementsContainer.innerHTML = '';
+        
+        // Get unlocked achievements
+        const unlockedAchievements = await db.collection('achievements').get();
+        const unlockedIds = new Set();
+        const unlockedData = {};
+        
+        unlockedAchievements.forEach(doc => {
+            const data = doc.data();
+            unlockedIds.add(doc.id);
+            unlockedData[doc.id] = data;
+        });
+        
+        // Create achievement items
+        for (const achievement of ACHIEVEMENTS) {
+            const isUnlocked = unlockedIds.has(achievement.id);
+            
+            const achievementEl = document.createElement('div');
+            achievementEl.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+            
+            const statusText = isUnlocked 
+                ? `Відкрито: ${unlockedData[achievement.id].unlockedDate}`
+                : 'Заблоковано';
+            
+            achievementEl.innerHTML = `
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-title">${achievement.title}</div>
+                <div class="achievement-description">${achievement.description}</div>
+                <div class="achievement-status ${isUnlocked ? 'unlocked' : 'locked'}">${statusText}</div>
+            `;
+            
+            achievementsContainer.appendChild(achievementEl);
+        }
+        
+    } catch (error) {
+        console.error('Error loading achievements:', error);
+        document.getElementById('achievementsList').innerHTML = '<p>Помилка завантаження досягнень</p>';
+    }
+}
+
 // Fireworks animation
 function showFireworks() {
     const fireworksContainer = document.getElementById('fireworks');
@@ -254,11 +423,71 @@ function createFirework(container, colors) {
     }, 1000);
 }
 
+// Notification and animation functions
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = type === 'error' ? 'auth-error' : 'success-notification';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => notification.classList.add('show'), 100);
+    
+    // Hide and remove notification
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 3000);
+}
+
+function showBigSuccessMessage(message) {
+    const messageEl = document.getElementById('successMessage');
+    messageEl.textContent = message;
+    messageEl.classList.add('show');
+    
+    setTimeout(() => {
+        messageEl.classList.remove('show');
+    }, 3000);
+}
+
+function showFireEmojis() {
+    const button = document.querySelector('.yes-button');
+    const buttonRect = button.getBoundingClientRect();
+    const emojis = ['🔥', '🎉', '✨', '🎊', '💥'];
+    
+    for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+            const emoji = document.createElement('div');
+            emoji.className = 'fire-emoji';
+            emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            // Start from button position
+            emoji.style.left = (buttonRect.left + buttonRect.width / 2 + (Math.random() - 0.5) * 100) + 'px';
+            emoji.style.top = (buttonRect.top + buttonRect.height / 2) + 'px';
+            
+            document.body.appendChild(emoji);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (emoji.parentNode) {
+                    emoji.parentNode.removeChild(emoji);
+                }
+            }, 2000);
+        }, i * 100);
+    }
+}
+
 // UI functions
 function showTab(tabName) {
     // Hide all tab contents
     document.getElementById('trackingTab').style.display = 'none';
     document.getElementById('statsTab').style.display = 'none';
+    document.getElementById('achievementsTab').style.display = 'none';
     
     // Remove active class from all buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
@@ -273,6 +502,10 @@ function showTab(tabName) {
         document.getElementById('statsTab').style.display = 'block';
         document.querySelectorAll('.tab-button')[1].classList.add('active');
         loadUserStats();
+    } else if (tabName === 'achievements') {
+        document.getElementById('achievementsTab').style.display = 'block';
+        document.querySelectorAll('.tab-button')[2].classList.add('active');
+        loadAchievements();
     }
 }
 

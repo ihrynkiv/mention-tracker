@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misha Tracker</title>
+    <title>Михайло Трекер</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <div class="auth-section" id="authSection">
-            <h1>🔥 Misha Tracker</h1>
+            <h1>🔥 Михайло Трекер</h1>
             <div class="auth-form">
                 <input type="text" id="username" placeholder="Введіть ім'я користувача" required>
                 <input type="password" id="password" placeholder="Введіть пароль" required>
@@ -22,12 +22,13 @@
 
         <div class="main-section" id="mainSection" style="display: none;">
             <div class="streak-counter">
-                🔥 <span id="streakCount">0</span>
+                🔥 <span id="streakCount">0</span> <span id="todayStatus">😴</span>
             </div>
             
             <nav class="tabs">
                 <button class="tab-button active" onclick="showTab('tracking')">Трекінг</button>
                 <button class="tab-button" onclick="showTab('stats')">Статистика</button>
+                <button class="tab-button" onclick="showTab('achievements')">Досягнення</button>
             </nav>
 
             <div class="tab-content" id="trackingTab">
@@ -35,6 +36,7 @@
                     <h2>Згадали Михайла?</h2>
                     <button class="yes-button" onclick="recordMention()">Так! 🎉</button>
                     <div id="fireworks" class="fireworks-container"></div>
+                    <div id="successMessage" class="success-message"></div>
                 </div>
             </div>
 
@@ -42,6 +44,13 @@
                 <div class="stats-content">
                     <h2>Найчастіше згадують:</h2>
                     <div id="userStats" class="user-stats"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="achievementsTab" style="display: none;">
+                <div class="achievements-content">
+                    <h2>Досягнення</h2>
+                    <div id="achievementsList" class="achievements-list"></div>
                 </div>
             </div>
 
