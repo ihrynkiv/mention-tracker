@@ -97,21 +97,45 @@ async function authenticateUser(username, password) {
     try {
         const normalizedUsername = username.toLowerCase();
         
-        const userDoc = await db.collection('users').doc(normalizedUsername).get();
-        if (!userDoc.exists) {
+        // Try to find user with normalized username first (new format)
+        let userDoc = await db.collection('users').doc(normalizedUsername).get();
+        let userData = null;
+        
+        if (userDoc.exists) {
+            userData = userDoc.data();
+        } else {
+            // Try to find user with original username (old format)
+            userDoc = await db.collection('users').doc(username).get();
+            if (userDoc.exists) {
+                userData = userDoc.data();
+                
+                // Migrate old user to new format
+                await db.collection('users').doc(normalizedUsername).set({
+                    username: username,
+                    normalizedUsername: normalizedUsername,
+                    password: userData.password,
+                    createdAt: userData.createdAt,
+                    mentionCount: userData.mentionCount
+                });
+                
+                // Delete old document
+                await db.collection('users').doc(username).delete();
+            }
+        }
+        
+        if (!userData) {
             showNotification('Користувача не знайдено', 'error');
             return;
         }
         
-        const userData = userDoc.data();
         if (userData.password !== password) {
             showNotification('Невірний пароль', 'error');
             return;
         }
         
         // Use the original username from database for display
-        currentUser = userData.username;
-        localStorage.setItem('currentUser', userData.username);
+        currentUser = userData.username || username;
+        localStorage.setItem('currentUser', currentUser);
         showNotification('Успішний вхід! 🎉', 'success');
         showMainSection();
         
