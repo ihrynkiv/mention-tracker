@@ -546,9 +546,9 @@ const GLOBAL_ACHIEVEMENTS = [
         requirement: { type: 'streak', value: 1 }
     },
     {
-        id: 'small_cocoa',
+        id: 'cocoa',
         icon: '☕',
-        title: 'Маленьке какао',
+        title: 'Какао',
         description: 'Досягніть 5 днів страйку',
         requirement: { type: 'streak', value: 5 }
     },
@@ -567,9 +567,9 @@ const GLOBAL_ACHIEVEMENTS = [
         requirement: { type: 'streak', value: 20 }
     },
     {
-        id: 'big_cocoa',
-        icon: '🍫',
-        title: 'Велике какао',
+        id: 'herbal_potion',
+        icon: '🌿',
+        title: 'Зілля-мазілля',
         description: 'Досягніть 30 днів страйку',
         requirement: { type: 'streak', value: 30 }
     },
@@ -602,35 +602,35 @@ const PERSONAL_ACHIEVEMENTS = [
         id: 'personal_sinabon',
         icon: '🧁',
         title: 'Сінабон',
-        description: 'Досягніть 1 день стрейку',
+        description: 'Досягніть 1 день страйку',
         requirement: { type: 'streak', value: 1 }
     },
     {
-        id: 'personal_small_cocoa',
+        id: 'personal_cocoa',
         icon: '☕',
-        title: 'Маленьке какао',
-        description: 'Досягніть 5 днів стрейку',
+        title: 'Какао',
+        description: 'Досягніть 5 днів страйку',
         requirement: { type: 'streak', value: 5 }
     },
     {
         id: 'personal_currant_tea',
         icon: '🫖',
         title: 'Горнятко чаю зі смородиною',
-        description: 'Досягніть 10 днів стрейку',
+        description: 'Досягніть 10 днів страйку',
         requirement: { type: 'streak', value: 10 }
     },
     {
         id: 'personal_bergamot_tea',
         icon: '🍵',
         title: 'Чай чорний з бергамотом',
-        description: 'Досягніть 20 днів стрейку',
+        description: 'Досягніть 20 днів страйку',
         requirement: { type: 'streak', value: 20 }
     },
     {
-        id: 'personal_big_cocoa',
-        icon: '🍫',
-        title: 'Велике какао',
-        description: 'Досягніть 30 днів стрейку',
+        id: 'personal_herbal_potion',
+        icon: '🌿',
+        title: 'Зілля-мазілля',
+        description: 'Досягніть 30 днів страйку',
         requirement: { type: 'streak', value: 30 }
     },
     {
