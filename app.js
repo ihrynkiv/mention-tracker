@@ -126,17 +126,32 @@ async function recordMention() {
         const now = new Date();
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
         
-        // Check if user has clicked within the last hour
-        const recentMentionsQuery = await db.collection('userMentions')
+        // Check if user has clicked within the last hour (no timestamp filter to avoid index)
+        const userMentionsQuery = await db.collection('userMentions')
             .where('mentionedBy', '==', currentUser)
-            .where('timestamp', '>', oneHourAgo)
-            .limit(1)
             .get();
         
-        if (!recentMentionsQuery.empty) {
-            const lastMention = recentMentionsQuery.docs[0].data();
-            const lastClickTime = lastMention.timestamp.toDate();
-            const timeDiff = now - lastClickTime;
+        // Find most recent mention within last hour
+        let recentMention = null;
+        let recentTimestamp = null;
+        
+        userMentionsQuery.forEach(doc => {
+            const data = doc.data();
+            const timestamp = data.timestamp;
+            
+            if (timestamp) {
+                const clickTime = timestamp.toDate();
+                if (clickTime > oneHourAgo) {
+                    if (!recentTimestamp || clickTime > recentTimestamp) {
+                        recentTimestamp = clickTime;
+                        recentMention = data;
+                    }
+                }
+            }
+        });
+        
+        if (recentMention && recentTimestamp) {
+            const timeDiff = now - recentTimestamp;
             const minutesLeft = Math.ceil((60 * 60 * 1000 - timeDiff) / (60 * 1000));
             
             showNotification(`Зачекайте ще ${minutesLeft} хвилин перед наступним кліком! ⏰`, 'error');
@@ -325,49 +340,77 @@ async function checkButtonCooldown() {
         const now = new Date();
         const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
         
-        const recentMentionsQuery = await db.collection('userMentions')
+        // Get all mentions by this user (no timestamp filter to avoid index requirement)
+        const userMentionsQuery = await db.collection('userMentions')
             .where('mentionedBy', '==', currentUser)
-            .where('timestamp', '>', oneHourAgo)
-            .limit(1)
             .get();
         
         const button = document.querySelector('.yes-button');
         const cooldownMessage = document.getElementById('cooldownMessage');
         if (!button) return;
         
-        if (!recentMentionsQuery.empty) {
-            const lastMention = recentMentionsQuery.docs[0].data();
-            const lastClickTime = lastMention.timestamp.toDate();
-            const timeDiff = now - lastClickTime;
-            const timeLeft = 60 * 60 * 1000 - timeDiff;
-            const minutesLeft = Math.ceil(timeLeft / (60 * 1000));
-            const secondsLeft = Math.ceil((timeLeft % (60 * 1000)) / 1000);
+        // Find most recent mention within last hour
+        let mostRecentMention = null;
+        let mostRecentTimestamp = null;
+        
+        userMentionsQuery.forEach(doc => {
+            const data = doc.data();
+            const timestamp = data.timestamp;
             
-            // Show countdown in button
-            if (minutesLeft > 0) {
-                button.textContent = `⏰ ${minutesLeft}:${secondsLeft.toString().padStart(2, '0')}`;
-            } else {
-                button.textContent = `⏰ ${secondsLeft}с`;
+            if (timestamp) {
+                const clickTime = timestamp.toDate();
+                
+                // Only consider mentions within the last hour
+                if (clickTime > oneHourAgo) {
+                    if (!mostRecentTimestamp || clickTime > mostRecentTimestamp) {
+                        mostRecentTimestamp = clickTime;
+                        mostRecentMention = data;
+                    }
+                }
             }
+        });
+        
+        if (mostRecentMention && mostRecentTimestamp) {
+            const timeDiff = now - mostRecentTimestamp;
+            const timeLeft = 60 * 60 * 1000 - timeDiff;
             
-            // Disable button and show message
-            button.disabled = true;
-            cooldownMessage.style.display = 'block';
-            
-            // Set timeout to re-check button state
-            setTimeout(() => {
-                checkButtonCooldown();
-            }, 1000); // Check every second for precise countdown
-            
-        } else {
-            // Enable button and hide message
-            button.disabled = false;
-            button.textContent = 'Так! 🎉';
-            cooldownMessage.style.display = 'none';
+            if (timeLeft > 0) {
+                const minutesLeft = Math.floor(timeLeft / (60 * 1000));
+                const secondsLeft = Math.ceil((timeLeft % (60 * 1000)) / 1000);
+                
+                // Show countdown in button
+                if (minutesLeft > 0) {
+                    button.textContent = `⏰ ${minutesLeft}:${secondsLeft.toString().padStart(2, '0')}`;
+                } else {
+                    button.textContent = `⏰ ${secondsLeft}с`;
+                }
+                
+                // Disable button and show message
+                button.disabled = true;
+                cooldownMessage.style.display = 'block';
+                
+                // Set timeout to re-check button state
+                setTimeout(() => {
+                    checkButtonCooldown();
+                }, 1000); // Check every second for precise countdown
+                
+                return;
+            }
         }
+        
+        // Enable button and hide message (no recent mentions or cooldown expired)
+        button.disabled = false;
+        button.textContent = 'Так! 🎉';
+        cooldownMessage.style.display = 'none';
         
     } catch (error) {
         console.error('Error checking button cooldown:', error);
+        // Fallback: enable button
+        const button = document.querySelector('.yes-button');
+        if (button) {
+            button.disabled = false;
+            button.textContent = 'Так! 🎉';
+        }
     }
 }
 
