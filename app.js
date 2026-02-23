@@ -257,13 +257,20 @@ async function loadTodayStatus() {
 async function loadDailyLegend() {
     try {
         const today = new Date().toDateString();
-        const todayDoc = await db.collection('mentions').doc(today).get();
+        
+        // Get all mentions for today, ordered by timestamp (earliest first)
+        const todayMentionsQuery = await db.collection('userMentions')
+            .where('date', '==', today)
+            .orderBy('timestamp', 'asc')
+            .limit(1)
+            .get();
         
         const legendElement = document.getElementById('dailyLegend');
         
-        if (todayDoc.exists) {
-            const todayData = todayDoc.data();
-            const firstMentioner = todayData.firstMentionBy;
+        if (!todayMentionsQuery.empty) {
+            // Get the first (earliest) mention
+            const firstMention = todayMentionsQuery.docs[0].data();
+            const firstMentioner = firstMention.mentionedBy;
             legendElement.textContent = `Легенда дня: ${firstMentioner} 👑`;
         } else {
             legendElement.textContent = 'Будь першою хто згадав сьогодні!';

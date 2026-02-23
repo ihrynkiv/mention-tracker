@@ -184,6 +184,7 @@ body {
     letter-spacing: 0.5px;
     line-height: 1.3;
     animation: legendGlow 3s ease-in-out infinite alternate;
+    clear: both;
 }
 
 @keyframes legendGlow {
