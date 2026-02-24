@@ -527,6 +527,35 @@ body {
     box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
 
+.charts-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid #eee;
+}
+
+.chart-container {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.chart-container h3 {
+    font-size: 1.4em;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .user-info {
     position: absolute;
     bottom: 20px;

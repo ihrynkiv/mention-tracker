@@ -359,9 +359,211 @@ async function loadUserStats() {
             statsContainer.appendChild(statItem);
         });
         
+        // Load charts after user stats
+        await loadCharts();
+        
     } catch (error) {
         console.error('Error loading user stats:', error);
         document.getElementById('userStats').innerHTML = '<p>Помилка завантаження статистики</p>';
+    }
+}
+
+async function loadCharts() {
+    try {
+        await Promise.all([
+            loadDailyChart(),
+            loadHourlyChart()
+        ]);
+    } catch (error) {
+        console.error('Error loading charts:', error);
+    }
+}
+
+async function loadDailyChart() {
+    try {
+        // Get all userMentions grouped by date
+        const allUserMentions = await db.collection('userMentions').get();
+        const dailyCounts = {};
+        
+        // Count mentions per day
+        allUserMentions.forEach(doc => {
+            const data = doc.data();
+            const date = data.date;
+            
+            if (!dailyCounts[date]) {
+                dailyCounts[date] = 0;
+            }
+            dailyCounts[date]++;
+        });
+        
+        // Sort dates and get last 14 days of data
+        const sortedDates = Object.keys(dailyCounts).sort((a, b) => new Date(a) - new Date(b));
+        const last14Days = sortedDates.slice(-14);
+        
+        const canvas = document.getElementById('dailyChart');
+        const ctx = canvas.getContext('2d');
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Chart dimensions
+        const padding = 60;
+        const chartWidth = canvas.width - (padding * 2);
+        const chartHeight = canvas.height - (padding * 2);
+        
+        // Find max count for scaling
+        const maxCount = Math.max(...last14Days.map(date => dailyCounts[date] || 0));
+        const yScale = chartHeight / (maxCount || 1);
+        const xStep = chartWidth / (last14Days.length - 1 || 1);
+        
+        // Draw grid lines
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        
+        // Horizontal grid lines
+        for (let i = 0; i <= 5; i++) {
+            const y = padding + (i * chartHeight / 5);
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(padding + chartWidth, y);
+            ctx.stroke();
+        }
+        
+        // Draw chart line
+        ctx.strokeStyle = '#667eea';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        ctx.beginPath();
+        last14Days.forEach((date, index) => {
+            const count = dailyCounts[date] || 0;
+            const x = padding + (index * xStep);
+            const y = padding + chartHeight - (count * yScale);
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+        
+        // Draw data points
+        ctx.fillStyle = '#667eea';
+        last14Days.forEach((date, index) => {
+            const count = dailyCounts[date] || 0;
+            const x = padding + (index * xStep);
+            const y = padding + chartHeight - (count * yScale);
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        // Draw labels
+        ctx.fillStyle = '#666';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        
+        // X-axis labels (dates)
+        last14Days.forEach((date, index) => {
+            const x = padding + (index * xStep);
+            const shortDate = new Date(date).toLocaleDateString('uk-UA', { month: 'short', day: 'numeric' });
+            ctx.fillText(shortDate, x, canvas.height - 20);
+        });
+        
+        // Y-axis labels (counts)
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 5; i++) {
+            const value = Math.round((maxCount * i) / 5);
+            const y = padding + chartHeight - (i * chartHeight / 5) + 4;
+            ctx.fillText(value.toString(), padding - 10, y);
+        }
+        
+    } catch (error) {
+        console.error('Error loading daily chart:', error);
+    }
+}
+
+async function loadHourlyChart() {
+    try {
+        // Get all userMentions and extract hours
+        const allUserMentions = await db.collection('userMentions').get();
+        const hourlyCounts = new Array(24).fill(0);
+        
+        // Count mentions per hour
+        allUserMentions.forEach(doc => {
+            const data = doc.data();
+            if (data.timestamp) {
+                const hour = data.timestamp.toDate().getHours();
+                hourlyCounts[hour]++;
+            }
+        });
+        
+        const canvas = document.getElementById('hourlyChart');
+        const ctx = canvas.getContext('2d');
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Chart dimensions
+        const padding = 60;
+        const chartWidth = canvas.width - (padding * 2);
+        const chartHeight = canvas.height - (padding * 2);
+        
+        const maxCount = Math.max(...hourlyCounts);
+        const barWidth = chartWidth / 24;
+        
+        // Draw grid lines
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        
+        // Horizontal grid lines
+        for (let i = 0; i <= 5; i++) {
+            const y = padding + (i * chartHeight / 5);
+            ctx.beginPath();
+            ctx.moveTo(padding, y);
+            ctx.lineTo(padding + chartWidth, y);
+            ctx.stroke();
+        }
+        
+        // Draw bars
+        hourlyCounts.forEach((count, hour) => {
+            const barHeight = (count / (maxCount || 1)) * chartHeight;
+            const x = padding + (hour * barWidth);
+            const y = padding + chartHeight - barHeight;
+            
+            // Gradient for bars
+            const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+            gradient.addColorStop(0, '#a8e6cf');
+            gradient.addColorStop(1, '#56ab2f');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+        });
+        
+        // Draw labels
+        ctx.fillStyle = '#666';
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'center';
+        
+        // X-axis labels (hours)
+        for (let hour = 0; hour < 24; hour += 2) {
+            const x = padding + (hour * barWidth) + (barWidth / 2);
+            ctx.fillText(`${hour}:00`, x, canvas.height - 20);
+        }
+        
+        // Y-axis labels (counts)
+        ctx.textAlign = 'right';
+        for (let i = 0; i <= 5; i++) {
+            const value = Math.round((maxCount * i) / 5);
+            const y = padding + chartHeight - (i * chartHeight / 5) + 4;
+            ctx.fillText(value.toString(), padding - 10, y);
+        }
+        
+    } catch (error) {
+        console.error('Error loading hourly chart:', error);
     }
 }
 
