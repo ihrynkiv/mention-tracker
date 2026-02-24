@@ -318,26 +318,45 @@ async function loadUserStats() {
             }
         });
         
+        // Process users and get their personal streaks
+        const userPromises = [];
+        const users = [];
+        
         usersSnapshot.forEach(doc => {
             const userData = doc.data();
             if (userData.mentionCount > 0) {
-                const username = userData.username;
-                const badges = userBadges[username] || [];
-                const badgesHtml = badges.length > 0 
-                    ? `<span class="user-badges">${badges.join('')}</span>` 
-                    : '';
-                
-                const statItem = document.createElement('div');
-                statItem.className = 'user-stat-item';
-                statItem.innerHTML = `
-                    <div class="username-with-badges">
-                        <span class="username">${username}</span>
-                        ${badgesHtml}
-                    </div>
-                    <span class="count">${userData.mentionCount}</span>
-                `;
-                statsContainer.appendChild(statItem);
+                users.push(userData);
+                userPromises.push(getUserPersonalStreak(userData.username));
             }
+        });
+        
+        // Wait for all streak calculations to complete
+        const userStreaks = await Promise.all(userPromises);
+        
+        // Display users with their badges and streaks
+        users.forEach((userData, index) => {
+            const username = userData.username;
+            const personalStreak = userStreaks[index];
+            const badges = userBadges[username] || [];
+            const badgesHtml = badges.length > 0 
+                ? `<span class="user-badges">${badges.join('')}</span>` 
+                : '';
+            
+            const streakHtml = personalStreak > 0 
+                ? `<span class="personal-streak">🔥${personalStreak}</span>`
+                : '';
+            
+            const statItem = document.createElement('div');
+            statItem.className = 'user-stat-item';
+            statItem.innerHTML = `
+                <div class="username-with-badges">
+                    <span class="username">${username}</span>
+                    ${badgesHtml}
+                    ${streakHtml}
+                </div>
+                <span class="count">${userData.mentionCount}</span>
+            `;
+            statsContainer.appendChild(statItem);
         });
         
     } catch (error) {
@@ -751,6 +770,38 @@ async function getCurrentStreak() {
         return streak;
     } catch (error) {
         console.error('Error calculating streak:', error);
+        return 0;
+    }
+}
+
+async function getUserPersonalStreak(username) {
+    try {
+        let streak = 0;
+        const today = new Date();
+        let currentDate = new Date(today);
+        
+        // Check consecutive days backwards for this specific user
+        while (true) {
+            const dateString = currentDate.toDateString();
+            
+            // Check if this user mentioned on this day
+            const userMentionsQuery = await db.collection('userMentions')
+                .where('mentionedBy', '==', username)
+                .where('date', '==', dateString)
+                .limit(1)
+                .get();
+            
+            if (!userMentionsQuery.empty) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    } catch (error) {
+        console.error('Error calculating user personal streak:', error);
         return 0;
     }
 }
