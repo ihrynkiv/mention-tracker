@@ -243,13 +243,15 @@ async function recordMention() {
         showFireEmojis();
         showBigSuccessMessage('Михайла згадано! 🔥🎉');
         
+        // Check personal achievements immediately after recording mention
+        await checkPersonalAchievements();
+        
         // Update streak count and today status
         setTimeout(() => {
             loadStreakCount();
             loadTodayStatus();
             loadDailyLegend();
             checkAchievements();
-            checkPersonalAchievements();
             checkButtonCooldown();
             checkDayGapAchievement();
         }, 500);
@@ -731,12 +733,38 @@ async function checkAchievements() {
     }
 }
 
+async function getCurrentStreak() {
+    try {
+        let streak = 0;
+        const today = new Date();
+        let currentDate = new Date(today);
+        
+        // Check consecutive days backwards
+        while (true) {
+            const dateString = currentDate.toDateString();
+            const mentionDoc = await db.collection('mentions').doc(dateString).get();
+            
+            if (mentionDoc.exists) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    } catch (error) {
+        console.error('Error calculating streak:', error);
+        return 0;
+    }
+}
+
 async function checkPersonalAchievements() {
     if (!currentUser) return;
     
     try {
-        // Get current streak and user's daily first counts
-        const currentStreak = parseInt(document.getElementById('streakCount').textContent) || 0;
+        // Get current streak directly from database (not DOM)
+        const currentStreak = await getCurrentStreak();
         
         // Get user's daily first count (how many times they were first)
         const userDailyFirstCount = await getUserDailyFirstCount();
@@ -763,6 +791,9 @@ async function checkPersonalAchievements() {
                     unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     unlockedDate: new Date().toLocaleDateString('uk-UA')
                 });
+                
+                // Show notification for unlocked achievement
+                showNotification(`Досягнення відкрито: ${achievement.title} ${achievement.icon}`, 'success');
             }
         }
         
