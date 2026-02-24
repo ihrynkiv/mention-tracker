@@ -804,42 +804,17 @@ async function checkPersonalAchievements(userWasFirstToday = false) {
 
 async function getUserDailyFirstCount() {
     try {
-        // Get all userMentions to validate who was actually first each day
-        const allUserMentions = await db.collection('userMentions').get();
-        
-        // Group mentions by date
-        const mentionsByDate = {};
-        
-        allUserMentions.forEach(doc => {
-            const data = doc.data();
-            const date = data.date;
-            const timestamp = data.timestamp;
-            const mentionedBy = data.mentionedBy;
-            
-            if (!mentionsByDate[date]) {
-                mentionsByDate[date] = [];
-            }
-            
-            mentionsByDate[date].push({
-                mentionedBy,
-                timestamp: timestamp ? timestamp.toDate() : new Date()
-            });
-        });
-        
-        // For each date, find who was actually first by timestamp
+        // Since mentions collection now correctly stores firstMentionBy without overwriting,
+        // we can simply count how many times this user was the daily legend
+        const allMentions = await db.collection('mentions').get();
         let dailyFirstCount = 0;
         
-        for (const date in mentionsByDate) {
-            const dayMentions = mentionsByDate[date];
-            
-            // Sort by timestamp to find who was first
-            dayMentions.sort((a, b) => a.timestamp - b.timestamp);
-            
-            // Check if current user was first that day
-            if (dayMentions.length > 0 && dayMentions[0].mentionedBy === currentUser) {
+        allMentions.forEach(doc => {
+            const data = doc.data();
+            if (data.firstMentionBy === currentUser) {
                 dailyFirstCount++;
             }
-        }
+        });
         
         return dailyFirstCount;
     } catch (error) {
