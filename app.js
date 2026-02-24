@@ -244,7 +244,7 @@ async function recordMention() {
         showBigSuccessMessage('Михайла згадано! 🔥🎉');
         
         // Check personal achievements immediately after recording mention
-        await checkPersonalAchievements();
+        await checkPersonalAchievements(isFirstMentionToday);
         
         // Update streak count and today status
         setTimeout(() => {
@@ -759,15 +759,18 @@ async function getCurrentStreak() {
     }
 }
 
-async function checkPersonalAchievements() {
+async function checkPersonalAchievements(userWasFirstToday = false) {
     if (!currentUser) return;
     
     try {
         // Get current streak directly from database (not DOM)
         const currentStreak = await getCurrentStreak();
         
-        // Get user's daily first count (how many times they were first)
+        // Get user's daily first count (how many times they were first in the past)
         const userDailyFirstCount = await getUserDailyFirstCount();
+        
+        // For Legend achievement, check if user was first today OR their past count
+        const legendCount = userWasFirstToday ? userDailyFirstCount + 1 : userDailyFirstCount;
         
         // Check each personal achievement
         for (const achievement of PERSONAL_ACHIEVEMENTS) {
@@ -778,7 +781,8 @@ async function checkPersonalAchievements() {
             if (achievement.requirement.type === 'streak') {
                 isUnlocked = currentStreak >= achievement.requirement.value;
             } else if (achievement.requirement.type === 'daily_first') {
-                isUnlocked = userDailyFirstCount >= achievement.requirement.value;
+                // Use legendCount which includes today's first mention if applicable
+                isUnlocked = legendCount >= achievement.requirement.value;
             } else if (achievement.requirement.type === 'personal_day_skip') {
                 isUnlocked = await checkPersonalDaySkip();
             }
