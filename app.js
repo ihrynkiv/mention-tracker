@@ -222,15 +222,11 @@ async function recordMention() {
         });
         
         // Check if this is the first mention today (for streak tracking)
-        const todayMentionsQuery = await db.collection('userMentions')
-            .where('date', '==', today)
-            .limit(1)
-            .get();
-        
-        const isFirstMentionToday = todayMentionsQuery.size === 1; // Only our mention exists
+        const todayMentionDoc = await db.collection('mentions').doc(today).get();
+        const isFirstMentionToday = !todayMentionDoc.exists;
         
         if (isFirstMentionToday) {
-            // Create/update the day record for streak tracking
+            // Create the day record for streak tracking (only if it doesn't exist)
             await db.collection('mentions').doc(today).set({
                 date: today,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -808,16 +804,42 @@ async function checkPersonalAchievements(userWasFirstToday = false) {
 
 async function getUserDailyFirstCount() {
     try {
-        // Count how many days this user was the daily legend
-        const allMentions = await db.collection('mentions').get();
+        // Get all userMentions to validate who was actually first each day
+        const allUserMentions = await db.collection('userMentions').get();
+        
+        // Group mentions by date
+        const mentionsByDate = {};
+        
+        allUserMentions.forEach(doc => {
+            const data = doc.data();
+            const date = data.date;
+            const timestamp = data.timestamp;
+            const mentionedBy = data.mentionedBy;
+            
+            if (!mentionsByDate[date]) {
+                mentionsByDate[date] = [];
+            }
+            
+            mentionsByDate[date].push({
+                mentionedBy,
+                timestamp: timestamp ? timestamp.toDate() : new Date()
+            });
+        });
+        
+        // For each date, find who was actually first by timestamp
         let dailyFirstCount = 0;
         
-        allMentions.forEach(doc => {
-            const data = doc.data();
-            if (data.firstMentionBy === currentUser) {
+        for (const date in mentionsByDate) {
+            const dayMentions = mentionsByDate[date];
+            
+            // Sort by timestamp to find who was first
+            dayMentions.sort((a, b) => a.timestamp - b.timestamp);
+            
+            // Check if current user was first that day
+            if (dayMentions.length > 0 && dayMentions[0].mentionedBy === currentUser) {
                 dailyFirstCount++;
             }
-        });
+        }
         
         return dailyFirstCount;
     } catch (error) {
