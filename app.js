@@ -294,7 +294,9 @@ async function loadUserStats() {
         
         // Show loading indicator
         statsContainer.innerHTML = '';
-        loadingIndicator.style.display = 'block';
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+        }
         
         let usersList = [];
         
@@ -344,7 +346,9 @@ async function loadUserStats() {
         }
         
         // Hide loading indicator
-        loadingIndicator.style.display = 'none';
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
         
         if (usersList.length === 0) {
             statsContainer.innerHTML = '<p>Поки що немає статистики</p>';
@@ -420,8 +424,14 @@ async function loadUserStats() {
         
         // Only show error if this is still the current request
         if (requestId === currentStatsRequestId) {
-            document.getElementById('statsLoading').style.display = 'none';
-            document.getElementById('userStats').innerHTML = '<p>Помилка завантаження статистики</p>';
+            const loadingIndicator = document.getElementById('statsLoading');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            const statsContainer = document.getElementById('userStats');
+            if (statsContainer) {
+                statsContainer.innerHTML = '<p>Помилка завантаження статистики</p>';
+            }
         }
     }
 }
