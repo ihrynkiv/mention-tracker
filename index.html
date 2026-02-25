@@ -54,7 +54,12 @@
                             <button class="switcher-btn" onclick="switchStatsMode('today')">Сьогодні</button>
                         </div>
                     </div>
-                    <div id="userStats" class="user-stats"></div>
+                    <div id="userStats" class="user-stats">
+                        <div id="statsLoading" class="loading-indicator" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <p>Завантаження статистики...</p>
+                        </div>
+                    </div>
                     
                     <div class="charts-section">
                         <div class="chart-container">

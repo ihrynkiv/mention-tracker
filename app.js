@@ -285,9 +285,16 @@ async function loadStreakCount() {
 }
 
 async function loadUserStats() {
+    // Generate unique request ID to handle race conditions
+    const requestId = ++currentStatsRequestId;
+    
     try {
         const statsContainer = document.getElementById('userStats');
+        const loadingIndicator = document.getElementById('statsLoading');
+        
+        // Show loading indicator
         statsContainer.innerHTML = '';
+        loadingIndicator.style.display = 'block';
         
         let usersList = [];
         
@@ -330,6 +337,15 @@ async function loadUserStats() {
             });
         }
         
+        // Check if this request is still the most recent one
+        if (requestId !== currentStatsRequestId) {
+            // A newer request has been made, abandon this one
+            return;
+        }
+        
+        // Hide loading indicator
+        loadingIndicator.style.display = 'none';
+        
         if (usersList.length === 0) {
             statsContainer.innerHTML = '<p>Поки що немає статистики</p>';
             return;
@@ -364,6 +380,12 @@ async function loadUserStats() {
         // Wait for all streak calculations to complete
         const userStreaks = await Promise.all(userPromises);
         
+        // Check again if this request is still the most recent one
+        if (requestId !== currentStatsRequestId) {
+            // A newer request has been made, abandon this one
+            return;
+        }
+        
         // Display users with their badges and streaks
         usersList.forEach((userData, index) => {
             const username = userData.username;
@@ -395,7 +417,12 @@ async function loadUserStats() {
         
     } catch (error) {
         console.error('Error loading user stats:', error);
-        document.getElementById('userStats').innerHTML = '<p>Помилка завантаження статистики</p>';
+        
+        // Only show error if this is still the current request
+        if (requestId === currentStatsRequestId) {
+            document.getElementById('statsLoading').style.display = 'none';
+            document.getElementById('userStats').innerHTML = '<p>Помилка завантаження статистики</p>';
+        }
     }
 }
 
@@ -816,6 +843,7 @@ let currentAchievementView = 'global';
 
 // Global variables for stats
 let currentStatsMode = 'allTime';
+let currentStatsRequestId = 0;
 
 // Global achievements system
 const GLOBAL_ACHIEVEMENTS = [
