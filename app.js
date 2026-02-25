@@ -289,7 +289,7 @@ async function loadUserStats() {
         const statsContainer = document.getElementById('userStats');
         statsContainer.innerHTML = '';
         
-        let users = [];
+        let usersList = [];
         
         if (currentStatsMode === 'today') {
             // Get today's mentions grouped by user
@@ -310,7 +310,7 @@ async function loadUserStats() {
             });
             
             // Convert to array and sort by today's count
-            users = Object.entries(todayUserCounts)
+            usersList = Object.entries(todayUserCounts)
                 .map(([username, count]) => ({ username, mentionCount: count }))
                 .sort((a, b) => b.mentionCount - a.mentionCount)
                 .slice(0, 10);
@@ -325,12 +325,12 @@ async function loadUserStats() {
             usersSnapshot.forEach(doc => {
                 const userData = doc.data();
                 if (userData.mentionCount > 0) {
-                    users.push(userData);
+                    usersList.push(userData);
                 }
             });
         }
         
-        if (users.length === 0) {
+        if (usersList.length === 0) {
             statsContainer.innerHTML = '<p>Поки що немає статистики</p>';
             return;
         }
@@ -356,21 +356,16 @@ async function loadUserStats() {
         
         // Process users and get their personal streaks
         const userPromises = [];
-        const users = [];
         
-        usersSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.mentionCount > 0) {
-                users.push(userData);
-                userPromises.push(getUserPersonalStreak(userData.username));
-            }
+        usersList.forEach(userData => {
+            userPromises.push(getUserPersonalStreak(userData.username));
         });
         
         // Wait for all streak calculations to complete
         const userStreaks = await Promise.all(userPromises);
         
         // Display users with their badges and streaks
-        users.forEach((userData, index) => {
+        usersList.forEach((userData, index) => {
             const username = userData.username;
             const personalStreak = userStreaks[index];
             const badges = userBadges[username] || [];
