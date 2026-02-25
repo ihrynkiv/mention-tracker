@@ -286,15 +286,51 @@ async function loadStreakCount() {
 
 async function loadUserStats() {
     try {
-        const usersSnapshot = await db.collection('users')
-            .orderBy('mentionCount', 'desc')
-            .limit(10)
-            .get();
-        
         const statsContainer = document.getElementById('userStats');
         statsContainer.innerHTML = '';
         
-        if (usersSnapshot.empty) {
+        let users = [];
+        
+        if (currentStatsMode === 'today') {
+            // Get today's mentions grouped by user
+            const today = new Date().toDateString();
+            const todayMentionsQuery = await db.collection('userMentions')
+                .where('date', '==', today)
+                .get();
+            
+            const todayUserCounts = {};
+            todayMentionsQuery.forEach(doc => {
+                const data = doc.data();
+                const username = data.mentionedBy;
+                
+                if (!todayUserCounts[username]) {
+                    todayUserCounts[username] = 0;
+                }
+                todayUserCounts[username]++;
+            });
+            
+            // Convert to array and sort by today's count
+            users = Object.entries(todayUserCounts)
+                .map(([username, count]) => ({ username, mentionCount: count }))
+                .sort((a, b) => b.mentionCount - a.mentionCount)
+                .slice(0, 10);
+                
+        } else {
+            // Get all-time stats
+            const usersSnapshot = await db.collection('users')
+                .orderBy('mentionCount', 'desc')
+                .limit(10)
+                .get();
+                
+            usersSnapshot.forEach(doc => {
+                const userData = doc.data();
+                if (userData.mentionCount > 0) {
+                    users.push(userData);
+                }
+            });
+        }
+        
+        if (users.length === 0) {
             statsContainer.innerHTML = '<p>Поки що немає статистики</p>';
             return;
         }
@@ -782,6 +818,9 @@ async function checkDayGapAchievement() {
 
 // Global variables for achievements
 let currentAchievementView = 'global';
+
+// Global variables for stats
+let currentStatsMode = 'allTime';
 
 // Global achievements system
 const GLOBAL_ACHIEVEMENTS = [
@@ -1335,6 +1374,21 @@ function showTab(tabName) {
     } else if (tabName === 'stats') {
         document.getElementById('statsTab').style.display = 'block';
         document.querySelectorAll('.tab-button')[1].classList.add('active');
+        
+        // Set the correct button state based on saved stats mode
+        const savedStatsMode = localStorage.getItem('statsMode') || 'allTime';
+        currentStatsMode = savedStatsMode;
+        
+        document.querySelectorAll('.stats-switcher .switcher-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        if (savedStatsMode === 'allTime') {
+            document.querySelector('.stats-switcher .switcher-btn:first-child').classList.add('active');
+        } else {
+            document.querySelector('.stats-switcher .switcher-btn:last-child').classList.add('active');
+        }
+        
         loadUserStats();
     } else if (tabName === 'achievements') {
         document.getElementById('achievementsTab').style.display = 'block';
@@ -1373,6 +1427,25 @@ function showMainSection() {
 function clearForm() {
     document.getElementById('username').value = '';
     document.getElementById('password').value = '';
+}
+
+function switchStatsMode(mode) {
+    currentStatsMode = mode;
+    localStorage.setItem('statsMode', mode);
+    
+    // Update button states
+    document.querySelectorAll('.stats-switcher .switcher-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (mode === 'allTime') {
+        document.querySelector('.stats-switcher .switcher-btn:first-child').classList.add('active');
+    } else {
+        document.querySelector('.stats-switcher .switcher-btn:last-child').classList.add('active');
+    }
+    
+    // Reload user stats with new mode
+    loadUserStats();
 }
 
 function checkAuthState() {

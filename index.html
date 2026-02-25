@@ -47,7 +47,13 @@
 
             <div class="tab-content" id="statsTab" style="display: none;">
                 <div class="stats-content">
-                    <h2>Найчастіше згадують:</h2>
+                    <div class="stats-header">
+                        <h2>Найчастіше згадують:</h2>
+                        <div class="stats-switcher">
+                            <button class="switcher-btn active" onclick="switchStatsMode('allTime')">Усі дні</button>
+                            <button class="switcher-btn" onclick="switchStatsMode('today')">Сьогодні</button>
+                        </div>
+                    </div>
                     <div id="userStats" class="user-stats"></div>
                     
                     <div class="charts-section">

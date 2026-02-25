@@ -468,6 +468,28 @@ body {
     text-align: center;
 }
 
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.stats-header h2 {
+    margin: 0;
+    text-align: left;
+}
+
+.stats-switcher {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 25px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .user-stats {
     max-width: 500px;
     margin: 0 auto;
