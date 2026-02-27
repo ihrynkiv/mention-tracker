@@ -1084,8 +1084,8 @@ async function checkPersonalAchievements(userWasFirstToday = false) {
     if (!currentUser) return;
     
     try {
-        // Get current streak directly from database (not DOM)
-        const currentStreak = await getCurrentStreak();
+        // Get current user's personal streak (not global streak)
+        const currentStreak = await getUserPersonalStreak(currentUser);
         
         // Get user's daily first count (how many times they were first in the past)
         const userDailyFirstCount = await getUserDailyFirstCount();
