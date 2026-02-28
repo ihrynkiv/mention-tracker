@@ -972,6 +972,14 @@ const PERSONAL_ACHIEVEMENTS = [
         title: 'Фанат',
         description: 'Три рази найшвидше згадати Михайла',
         requirement: { type: 'daily_first', value: 3 }
+    },
+    {
+        id: 'golden_nut',
+        icon: '🥜',
+        title: 'Золотий горішок',
+        description: 'Персональна нагорода Лілі за її вчинки у реальному житті',
+        unlockedDescription: 'За продаж горішків Михайлу',
+        requirement: { type: 'manual', value: 0 }
     }
 ];
 
@@ -1274,10 +1282,15 @@ async function loadAchievements() {
                 statusText += ` (${unlockedData[achievement.id].hoursBetween} годин пропуску)`;
             }
             
+            // Use special description for golden nut achievement when unlocked
+            const description = (isUnlocked && achievement.unlockedDescription) 
+                ? achievement.unlockedDescription 
+                : achievement.description;
+            
             achievementEl.innerHTML = `
                 <div class="achievement-icon">${achievement.icon}</div>
                 <div class="achievement-title">${achievement.title}</div>
-                <div class="achievement-description">${achievement.description}</div>
+                <div class="achievement-description">${description}</div>
                 <div class="achievement-status ${isUnlocked ? 'unlocked' : 'locked'}">${statusText}</div>
             `;
             
