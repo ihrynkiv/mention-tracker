@@ -1095,11 +1095,9 @@ async function checkPersonalAchievements(userWasFirstToday = false) {
         // Get current user's personal streak (not global streak)
         const currentStreak = await getUserPersonalStreak(currentUser);
         
-        // Get user's daily first count (how many times they were first in the past)
-        const userDailyFirstCount = await getUserDailyFirstCount();
-        
-        // For Legend achievement, check if user was first today OR their past count
-        const legendCount = userWasFirstToday ? userDailyFirstCount + 1 : userDailyFirstCount;
+        // Get user's daily first count (how many times they were first)
+        // This already includes today if user was first today (mentions collection is updated before this)
+        const legendCount = await getUserDailyFirstCount();
         
         // Check each personal achievement
         for (const achievement of PERSONAL_ACHIEVEMENTS) {
