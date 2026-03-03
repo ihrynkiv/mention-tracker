@@ -195,7 +195,7 @@ body {
     font-weight: 700;
     color: #2c3e50;
     text-align: center;
-    box-shadow: 
+    box-shadow:
         0 8px 25px rgba(241, 196, 15, 0.4),
         0 0 0 1px rgba(255, 255, 255, 0.8) inset,
         0 2px 4px rgba(255, 255, 255, 0.9) inset;
@@ -212,13 +212,13 @@ body {
 
 @keyframes legendGlow {
     0% {
-        box-shadow: 
+        box-shadow:
             0 8px 25px rgba(241, 196, 15, 0.4),
             0 0 0 1px rgba(255, 255, 255, 0.8) inset,
             0 2px 4px rgba(255, 255, 255, 0.9) inset;
     }
     100% {
-        box-shadow: 
+        box-shadow:
             0 12px 35px rgba(241, 196, 15, 0.6),
             0 0 0 1px rgba(255, 255, 255, 0.9) inset,
             0 2px 6px rgba(255, 255, 255, 1) inset,
@@ -645,6 +645,7 @@ body {
 .activity-item {
     display: flex;
     justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     padding: 12px 15px;
     margin: 8px 0;
@@ -753,27 +754,27 @@ body {
     .container {
         padding: 10px;
     }
-    
+
     .auth-section, .main-section {
         padding: 20px;
     }
-    
+
     .tracking-content h2 {
         font-size: 2em;
     }
-    
+
     .yes-button {
         padding: 15px 30px;
         font-size: 20px;
     }
-    
+
     .streak-counter {
         position: static;
         text-align: center;
         margin-bottom: 20px;
         display: inline-block;
     }
-    
+
     .user-info {
         position: static;
         text-align: center;
@@ -867,11 +868,11 @@ body {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .reason-btn {
         padding: 12px 16px;
     }
-    
+
     .reason-input-content textarea {
         max-width: 100%;
     }
@@ -1032,17 +1033,17 @@ body {
         justify-content: space-between;
         align-items: center;
     }
-    
+
     .edit-reason-container {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .edit-reason-container .edit-reason-input {
         order: 1;
         width: 100%;
     }
-    
+
     .edit-reason-container .save-reason-btn,
     .edit-reason-container .cancel-reason-btn {
         order: 2;
