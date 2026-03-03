@@ -1676,26 +1676,28 @@ function editReason(mentionId, currentReason) {
     const reasonDiv = document.getElementById(`reason-${mentionId}`).parentNode;
     if (!reasonDiv) return;
 
-    // Create edit container
+    // Create edit container using the same UI as add reason
     const editContainer = document.createElement('div');
-    editContainer.className = 'edit-reason-container';
+    editContainer.className = 'add-reason-container'; // Use same class for consistent styling
     editContainer.innerHTML = `
-        <input type="text" class="edit-reason-input" value="${currentReason.replace(/"/g, '&quot;')}" maxlength="200">
-        <button class="save-reason-btn" onclick="saveEditedReason('${mentionId}', this.previousElementSibling.value)">💾</button>
-        <button class="cancel-reason-btn" onclick="cancelEditReason('${mentionId}', '${currentReason.replace(/'/g, "\\'")}')">❌</button>
+        <textarea placeholder="Редагувати причину..." maxlength="200" class="add-reason-input">${currentReason}</textarea>
+        <div class="reason-buttons">
+            <button class="reason-btn save-btn" onclick="saveEditedReason('${mentionId}', this.parentNode.previousElementSibling.value)">Зберегти</button>
+            <button class="reason-btn cancel-btn" onclick="cancelEditReason('${mentionId}', '${currentReason.replace(/'/g, "\\'")}')">Скасувати</button>
+        </div>
     `;
     
     // Replace the activity-reason div with edit container
     reasonDiv.parentNode.replaceChild(editContainer, reasonDiv);
     
-    // Focus the input
-    const input = editContainer.querySelector('.edit-reason-input');
-    input.focus();
-    input.select();
+    // Focus the textarea and select all text
+    const textarea = editContainer.querySelector('.add-reason-input');
+    textarea.focus();
+    textarea.select();
 }
 
 function cancelEditReason(mentionId, originalReason) {
-    const editContainer = document.querySelector('.edit-reason-container');
+    const editContainer = document.querySelector('.add-reason-container');
     if (!editContainer) return;
 
     const reasonDiv = document.createElement('div');
@@ -1721,7 +1723,7 @@ async function saveEditedReason(mentionId, newReason) {
         });
         
         // Update display
-        const editContainer = document.querySelector('.edit-reason-container');
+        const editContainer = document.querySelector('.add-reason-container');
         if (editContainer) {
             const reasonDiv = document.createElement('div');
             reasonDiv.className = 'activity-reason';
