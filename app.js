@@ -714,7 +714,10 @@ async function updateActivityDisplay() {
 
         // Enable/disable next button
         if (nextBtn) {
-            const canGoNext = currentActivityDate.toDateString() < today.toDateString();
+            // Compare dates properly, not strings
+            const currentDateOnly = new Date(currentActivityDate.getFullYear(), currentActivityDate.getMonth(), currentActivityDate.getDate());
+            const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const canGoNext = currentDateOnly < todayDateOnly;
             nextBtn.disabled = !canGoNext;
         }
 
