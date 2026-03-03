@@ -237,7 +237,9 @@ async function recordMention() {
         // Show amazing animations
         showFireworks();
         showFireEmojis();
-        showBigSuccessMessage('Михайла згадано! 🔥🎉');
+        
+        // Show success message with reason option
+        showSuccessWithReasonOption(mentionId);
 
         // Check personal achievements immediately after recording mention
         await checkPersonalAchievements();
@@ -745,6 +747,7 @@ async function updateActivityDisplay() {
                 activities.push({
                     username: data.mentionedBy,
                     timestamp: data.timestamp.toDate(),
+                    reason: data.reason || null,
                     id: doc.id
                 });
             }
@@ -762,9 +765,24 @@ async function updateActivityDisplay() {
 
             const activityItem = document.createElement('div');
             activityItem.className = 'activity-item';
+            
+            let reasonHtml = '';
+            if (activity.reason) {
+                const canEdit = activity.username === currentUser;
+                reasonHtml = `
+                    <div class="activity-reason">
+                        <span class="reason-text" id="reason-${activity.id}">${activity.reason}</span>
+                        ${canEdit ? `<button class="edit-reason-btn" onclick="editReason('${activity.id}', '${activity.reason.replace(/'/g, "\\'")}')">✏️</button>` : ''}
+                    </div>
+                `;
+            }
+            
             activityItem.innerHTML = `
-                <span class="activity-user">${activity.username}</span>
-                <span class="activity-time">${timeString}</span>
+                <div class="activity-header">
+                    <span class="activity-user">${activity.username}</span>
+                    <span class="activity-time">${timeString}</span>
+                </div>
+                ${reasonHtml}
             `;
             
             activityList.appendChild(activityItem);
@@ -1512,6 +1530,157 @@ function showBigSuccessMessage(message) {
     setTimeout(() => {
         messageEl.classList.remove('show');
     }, 3000);
+}
+
+function showSuccessWithReasonOption(mentionId) {
+    const messageEl = document.getElementById('successMessage');
+    messageEl.innerHTML = `
+        <div class="success-content">
+            <p>Михайла згадано! 🔥🎉</p>
+            <p>Хочете додати причину?</p>
+            <div class="reason-buttons">
+                <button onclick="showReasonInput('${mentionId}')" class="reason-btn yes-btn">Так</button>
+                <button onclick="hideSuccessMessage()" class="reason-btn skip-btn">Пропустити</button>
+            </div>
+        </div>
+    `;
+    messageEl.classList.add('show');
+}
+
+function showReasonInput(mentionId) {
+    const messageEl = document.getElementById('successMessage');
+    messageEl.innerHTML = `
+        <div class="reason-input-content">
+            <p>Чому згадали Михайла?</p>
+            <textarea id="reasonText" placeholder="Введіть причину..." maxlength="200"></textarea>
+            <div class="reason-buttons">
+                <button onclick="saveReason('${mentionId}')" class="reason-btn save-btn">Зберегти</button>
+                <button onclick="hideSuccessMessage()" class="reason-btn cancel-btn">Скасувати</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('reasonText').focus();
+}
+
+async function saveReason(mentionId) {
+    const reasonText = document.getElementById('reasonText').value.trim();
+    if (!reasonText) {
+        showNotification('Будь ласка, введіть причину', 'error');
+        return;
+    }
+
+    try {
+        // Save reason to userMentions document
+        await db.collection('userMentions').doc(mentionId).update({
+            reason: reasonText
+        });
+        
+        showNotification('Причину збережено! 💾', 'success');
+        hideSuccessMessage();
+    } catch (error) {
+        console.error('Error saving reason:', error);
+        showNotification('Помилка при збереженні причини', 'error');
+    }
+}
+
+function hideSuccessMessage() {
+    const messageEl = document.getElementById('successMessage');
+    messageEl.classList.remove('show');
+}
+
+function editReason(mentionId, currentReason) {
+    const reasonSpan = document.getElementById(`reason-${mentionId}`);
+    if (!reasonSpan) return;
+
+    // Replace reason text with input field
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentReason;
+    input.maxLength = 200;
+    input.className = 'edit-reason-input';
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = '💾';
+    saveBtn.className = 'save-reason-btn';
+    saveBtn.onclick = () => saveEditedReason(mentionId, input.value);
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '❌';
+    cancelBtn.className = 'cancel-reason-btn';
+    cancelBtn.onclick = () => cancelEditReason(mentionId, currentReason);
+    
+    const editContainer = document.createElement('div');
+    editContainer.className = 'edit-reason-container';
+    editContainer.appendChild(input);
+    editContainer.appendChild(saveBtn);
+    editContainer.appendChild(cancelBtn);
+    
+    reasonSpan.parentNode.replaceChild(editContainer, reasonSpan);
+    input.focus();
+    input.select();
+}
+
+function cancelEditReason(mentionId, originalReason) {
+    const container = document.querySelector(`#reason-${mentionId}`)?.parentNode || 
+                     document.querySelector('.edit-reason-container');
+    if (!container) return;
+
+    const reasonSpan = document.createElement('span');
+    reasonSpan.className = 'reason-text';
+    reasonSpan.id = `reason-${mentionId}`;
+    reasonSpan.textContent = originalReason;
+    
+    const editBtn = document.createElement('button');
+    editBtn.className = 'edit-reason-btn';
+    editBtn.textContent = '✏️';
+    editBtn.onclick = () => editReason(mentionId, originalReason);
+    
+    const reasonDiv = document.createElement('div');
+    reasonDiv.className = 'activity-reason';
+    reasonDiv.appendChild(reasonSpan);
+    reasonDiv.appendChild(editBtn);
+    
+    container.parentNode.replaceChild(reasonDiv, container);
+}
+
+async function saveEditedReason(mentionId, newReason) {
+    const trimmedReason = newReason.trim();
+    if (!trimmedReason) {
+        showNotification('Причина не може бути порожньою', 'error');
+        return;
+    }
+
+    try {
+        await db.collection('userMentions').doc(mentionId).update({
+            reason: trimmedReason
+        });
+        
+        // Update display
+        const reasonSpan = document.createElement('span');
+        reasonSpan.className = 'reason-text';
+        reasonSpan.id = `reason-${mentionId}`;
+        reasonSpan.textContent = trimmedReason;
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-reason-btn';
+        editBtn.textContent = '✏️';
+        editBtn.onclick = () => editReason(mentionId, trimmedReason);
+        
+        const reasonDiv = document.createElement('div');
+        reasonDiv.className = 'activity-reason';
+        reasonDiv.appendChild(reasonSpan);
+        reasonDiv.appendChild(editBtn);
+        
+        const container = document.querySelector('.edit-reason-container');
+        if (container) {
+            container.parentNode.replaceChild(reasonDiv, container);
+        }
+        
+        showNotification('Причину оновлено! ✅', 'success');
+    } catch (error) {
+        console.error('Error saving edited reason:', error);
+        showNotification('Помилка при збереженні причини', 'error');
+    }
 }
 
 function showFireEmojis() {

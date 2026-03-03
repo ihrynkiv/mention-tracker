@@ -779,3 +779,206 @@ body {
         margin-top: 20px;
     }
 }
+
+/* Reason functionality styles */
+.success-content, .reason-input-content {
+    text-align: center;
+    padding: 10px;
+}
+
+.success-content p:first-child {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.success-content p:last-of-type {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.reason-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.reason-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.yes-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.yes-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.skip-btn, .cancel-btn {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.skip-btn:hover, .cancel-btn:hover {
+    background: #dee2e6;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.reason-input-content textarea {
+    width: 100%;
+    max-width: 300px;
+    height: 80px;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.reason-input-content textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 768px) {
+    .reason-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .reason-btn {
+        padding: 12px 16px;
+    }
+    
+    .reason-input-content textarea {
+        max-width: 100%;
+    }
+}
+
+/* Activity log reason styles */
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.activity-reason {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #28a745;
+}
+
+.reason-text {
+    flex: 1;
+    color: #495057;
+    font-style: italic;
+    margin-right: 8px;
+}
+
+.edit-reason-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.edit-reason-btn:hover {
+    background: #e9ecef;
+}
+
+.edit-reason-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border-radius: 8px;
+    border-left: 3px solid #ffc107;
+}
+
+.edit-reason-input {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.edit-reason-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.save-reason-btn, .cancel-reason-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.save-reason-btn:hover {
+    background: #d4edda;
+}
+
+.cancel-reason-btn:hover {
+    background: #f8d7da;
+}
+
+@media (max-width: 768px) {
+    .activity-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .edit-reason-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .edit-reason-container .edit-reason-input {
+        order: 1;
+        width: 100%;
+    }
+    
+    .edit-reason-container .save-reason-btn,
+    .edit-reason-container .cancel-reason-btn {
+        order: 2;
+        padding: 8px 12px;
+    }
+}
