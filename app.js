@@ -1351,15 +1351,15 @@ function switchAchievements(type) {
     currentAchievementView = type;
     localStorage.setItem('achievementView', type);
 
-    // Update button states
-    document.querySelectorAll('.switcher-btn').forEach(btn => {
+    // Update button states (only achievement switcher buttons)
+    document.querySelectorAll('#achievementsTab .switcher-btn').forEach(btn => {
         btn.classList.remove('active');
     });
 
     if (type === 'global') {
-        document.querySelectorAll('.switcher-btn')[0].classList.add('active');
+        document.querySelector('#achievementsTab .switcher-btn:first-child').classList.add('active');
     } else {
-        document.querySelectorAll('.switcher-btn')[1].classList.add('active');
+        document.querySelector('#achievementsTab .switcher-btn:last-child').classList.add('active');
     }
 
     // Reload achievements
@@ -1584,14 +1584,15 @@ function showTab(tabName) {
         const savedView = localStorage.getItem('achievementView') || 'global';
         currentAchievementView = savedView;
 
-        document.querySelectorAll('.switcher-btn').forEach(btn => {
+        // Only update achievement switcher buttons (not stats switcher)
+        document.querySelectorAll('#achievementsTab .switcher-btn').forEach(btn => {
             btn.classList.remove('active');
         });
 
         if (savedView === 'global') {
-            document.querySelectorAll('.switcher-btn')[0].classList.add('active');
+            document.querySelector('#achievementsTab .switcher-btn:first-child').classList.add('active');
         } else {
-            document.querySelectorAll('.switcher-btn')[1].classList.add('active');
+            document.querySelector('#achievementsTab .switcher-btn:last-child').classList.add('active');
         }
 
         loadAchievements();
