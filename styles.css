@@ -898,12 +898,15 @@ body {
 
 .activity-reason {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
     margin-top: 8px;
     padding: 8px 12px;
     background: #f8f9fa;
     border-radius: 8px;
     border-left: 3px solid #28a745;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .reason-text {
@@ -969,6 +972,58 @@ body {
 
 .cancel-reason-btn:hover {
     background: #f8d7da;
+}
+
+/* Activity no reason and add reason styles */
+.activity-no-reason {
+    margin-top: 8px;
+    text-align: left;
+}
+
+.add-reason-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.add-reason-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(40, 167, 69, 0.3);
+}
+
+.add-reason-container {
+    margin-top: 8px;
+    padding: 12px;
+    background: #fff3cd;
+    border-radius: 8px;
+    border-left: 3px solid #ffc107;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.add-reason-input {
+    width: 100%;
+    height: 60px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.add-reason-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
 @media (max-width: 768px) {

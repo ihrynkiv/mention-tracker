@@ -775,6 +775,15 @@ async function updateActivityDisplay() {
                         ${canEdit ? `<button class="edit-reason-btn" onclick="editReason('${activity.id}', '${activity.reason.replace(/'/g, "\\'")}')">✏️</button>` : ''}
                     </div>
                 `;
+            } else if (activity.username === currentUser) {
+                // Show "Add reason" option for current user's entries without reason
+                reasonHtml = `
+                    <div class="activity-no-reason">
+                        <button class="add-reason-btn" onclick="addReasonToExisting('${activity.id}')">
+                            ➕ Додати причину
+                        </button>
+                    </div>
+                `;
             }
             
             activityItem.innerHTML = `
@@ -1593,6 +1602,74 @@ async function saveReason(mentionId) {
 function hideSuccessMessage() {
     const messageEl = document.getElementById('successMessage');
     messageEl.classList.remove('show');
+}
+
+function addReasonToExisting(mentionId) {
+    const noReasonDiv = document.querySelector('.activity-no-reason');
+    if (!noReasonDiv) return;
+
+    // Create input container
+    const inputContainer = document.createElement('div');
+    inputContainer.className = 'add-reason-container';
+    inputContainer.innerHTML = `
+        <textarea placeholder="Введіть причину..." maxlength="200" class="add-reason-input"></textarea>
+        <div class="reason-buttons">
+            <button class="reason-btn save-btn" onclick="saveNewReason('${mentionId}', this.parentNode.previousElementSibling.value)">Зберегти</button>
+            <button class="reason-btn cancel-btn" onclick="cancelAddReason('${mentionId}')">Скасувати</button>
+        </div>
+    `;
+    
+    noReasonDiv.parentNode.replaceChild(inputContainer, noReasonDiv);
+    
+    const textarea = inputContainer.querySelector('.add-reason-input');
+    textarea.focus();
+}
+
+function cancelAddReason(mentionId) {
+    const inputContainer = document.querySelector('.add-reason-container');
+    if (!inputContainer) return;
+
+    const noReasonDiv = document.createElement('div');
+    noReasonDiv.className = 'activity-no-reason';
+    noReasonDiv.innerHTML = `
+        <button class="add-reason-btn" onclick="addReasonToExisting('${mentionId}')">
+            ➕ Додати причину
+        </button>
+    `;
+    
+    inputContainer.parentNode.replaceChild(noReasonDiv, inputContainer);
+}
+
+async function saveNewReason(mentionId, reasonText) {
+    const trimmedReason = reasonText.trim();
+    if (!trimmedReason) {
+        showNotification('Будь ласка, введіть причину', 'error');
+        return;
+    }
+
+    try {
+        await db.collection('userMentions').doc(mentionId).update({
+            reason: trimmedReason
+        });
+        
+        // Update display to show the new reason
+        const inputContainer = document.querySelector('.add-reason-container');
+        if (inputContainer) {
+            const reasonDiv = document.createElement('div');
+            reasonDiv.className = 'activity-reason';
+            reasonDiv.innerHTML = `
+                <span class="reason-text" id="reason-${mentionId}">${trimmedReason}</span>
+                <button class="edit-reason-btn" onclick="editReason('${mentionId}', '${trimmedReason.replace(/'/g, "\\'")}')">✏️</button>
+            `;
+            
+            inputContainer.parentNode.replaceChild(reasonDiv, inputContainer);
+        }
+        
+        showNotification('Причину додано! ✅', 'success');
+    } catch (error) {
+        console.error('Error saving new reason:', error);
+        showNotification('Помилка при збереженні причини', 'error');
+    }
 }
 
 function editReason(mentionId, currentReason) {
