@@ -1548,18 +1548,25 @@ function showSuccessWithReasonOption(mentionId) {
 }
 
 function showReasonInput(mentionId) {
-    const messageEl = document.getElementById('successMessage');
-    messageEl.innerHTML = `
-        <div class="reason-input-content">
-            <p>Чому згадали Михайла?</p>
-            <textarea id="reasonText" placeholder="Введіть причину..." maxlength="200"></textarea>
-            <div class="reason-buttons">
-                <button onclick="saveReason('${mentionId}')" class="reason-btn save-btn">Зберегти</button>
-                <button onclick="hideSuccessMessage()" class="reason-btn cancel-btn">Скасувати</button>
+    // First hide the current modal
+    hideSuccessMessage();
+    
+    // Small delay then show input modal
+    setTimeout(() => {
+        const messageEl = document.getElementById('successMessage');
+        messageEl.innerHTML = `
+            <div class="reason-input-content">
+                <p>Чому згадали Михайла?</p>
+                <textarea id="reasonText" placeholder="Введіть причину..." maxlength="200"></textarea>
+                <div class="reason-buttons">
+                    <button onclick="saveReason('${mentionId}')" class="reason-btn save-btn">Зберегти</button>
+                    <button onclick="hideSuccessMessage()" class="reason-btn cancel-btn">Скасувати</button>
+                </div>
             </div>
-        </div>
-    `;
-    document.getElementById('reasonText').focus();
+        `;
+        messageEl.classList.add('show');
+        document.getElementById('reasonText').focus();
+    }, 200);
 }
 
 async function saveReason(mentionId) {
@@ -1589,58 +1596,39 @@ function hideSuccessMessage() {
 }
 
 function editReason(mentionId, currentReason) {
-    const reasonSpan = document.getElementById(`reason-${mentionId}`);
-    if (!reasonSpan) return;
+    const reasonDiv = document.getElementById(`reason-${mentionId}`).parentNode;
+    if (!reasonDiv) return;
 
-    // Replace reason text with input field
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = currentReason;
-    input.maxLength = 200;
-    input.className = 'edit-reason-input';
-    
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = '💾';
-    saveBtn.className = 'save-reason-btn';
-    saveBtn.onclick = () => saveEditedReason(mentionId, input.value);
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = '❌';
-    cancelBtn.className = 'cancel-reason-btn';
-    cancelBtn.onclick = () => cancelEditReason(mentionId, currentReason);
-    
+    // Create edit container
     const editContainer = document.createElement('div');
     editContainer.className = 'edit-reason-container';
-    editContainer.appendChild(input);
-    editContainer.appendChild(saveBtn);
-    editContainer.appendChild(cancelBtn);
+    editContainer.innerHTML = `
+        <input type="text" class="edit-reason-input" value="${currentReason.replace(/"/g, '&quot;')}" maxlength="200">
+        <button class="save-reason-btn" onclick="saveEditedReason('${mentionId}', this.previousElementSibling.value)">💾</button>
+        <button class="cancel-reason-btn" onclick="cancelEditReason('${mentionId}', '${currentReason.replace(/'/g, "\\'")}')">❌</button>
+    `;
     
-    reasonSpan.parentNode.replaceChild(editContainer, reasonSpan);
+    // Replace the activity-reason div with edit container
+    reasonDiv.parentNode.replaceChild(editContainer, reasonDiv);
+    
+    // Focus the input
+    const input = editContainer.querySelector('.edit-reason-input');
     input.focus();
     input.select();
 }
 
 function cancelEditReason(mentionId, originalReason) {
-    const container = document.querySelector(`#reason-${mentionId}`)?.parentNode || 
-                     document.querySelector('.edit-reason-container');
-    if (!container) return;
+    const editContainer = document.querySelector('.edit-reason-container');
+    if (!editContainer) return;
 
-    const reasonSpan = document.createElement('span');
-    reasonSpan.className = 'reason-text';
-    reasonSpan.id = `reason-${mentionId}`;
-    reasonSpan.textContent = originalReason;
-    
-    const editBtn = document.createElement('button');
-    editBtn.className = 'edit-reason-btn';
-    editBtn.textContent = '✏️';
-    editBtn.onclick = () => editReason(mentionId, originalReason);
-    
     const reasonDiv = document.createElement('div');
     reasonDiv.className = 'activity-reason';
-    reasonDiv.appendChild(reasonSpan);
-    reasonDiv.appendChild(editBtn);
+    reasonDiv.innerHTML = `
+        <span class="reason-text" id="reason-${mentionId}">${originalReason}</span>
+        <button class="edit-reason-btn" onclick="editReason('${mentionId}', '${originalReason.replace(/'/g, "\\'")}')">✏️</button>
+    `;
     
-    container.parentNode.replaceChild(reasonDiv, container);
+    editContainer.parentNode.replaceChild(reasonDiv, editContainer);
 }
 
 async function saveEditedReason(mentionId, newReason) {
@@ -1656,24 +1644,16 @@ async function saveEditedReason(mentionId, newReason) {
         });
         
         // Update display
-        const reasonSpan = document.createElement('span');
-        reasonSpan.className = 'reason-text';
-        reasonSpan.id = `reason-${mentionId}`;
-        reasonSpan.textContent = trimmedReason;
-        
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-reason-btn';
-        editBtn.textContent = '✏️';
-        editBtn.onclick = () => editReason(mentionId, trimmedReason);
-        
-        const reasonDiv = document.createElement('div');
-        reasonDiv.className = 'activity-reason';
-        reasonDiv.appendChild(reasonSpan);
-        reasonDiv.appendChild(editBtn);
-        
-        const container = document.querySelector('.edit-reason-container');
-        if (container) {
-            container.parentNode.replaceChild(reasonDiv, container);
+        const editContainer = document.querySelector('.edit-reason-container');
+        if (editContainer) {
+            const reasonDiv = document.createElement('div');
+            reasonDiv.className = 'activity-reason';
+            reasonDiv.innerHTML = `
+                <span class="reason-text" id="reason-${mentionId}">${trimmedReason}</span>
+                <button class="edit-reason-btn" onclick="editReason('${mentionId}', '${trimmedReason.replace(/'/g, "\\'")}')">✏️</button>
+            `;
+            
+            editContainer.parentNode.replaceChild(reasonDiv, editContainer);
         }
         
         showNotification('Причину оновлено! ✅', 'success');

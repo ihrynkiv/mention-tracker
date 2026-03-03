@@ -881,7 +881,18 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.activity-user {
+    font-weight: 500;
+    color: #495057;
+}
+
+.activity-time {
+    color: #6c757d;
+    font-size: 14px;
 }
 
 .activity-reason {
@@ -961,9 +972,9 @@ body {
 
 @media (max-width: 768px) {
     .activity-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
     }
     
     .edit-reason-container {
