@@ -17,8 +17,83 @@ const auth = firebase.auth();
 // Global variables
 let currentUser = null;
 
+// Activity cache for reducing Firebase reads
+let activityCache = new Map();
+let lastCacheUpdate = null;
+const CACHE_EXPIRY_MS = 3 * 60 * 1000; // 3 minutes
+const CACHE_KEY = 'mention_activity_cache';
+
+// Debouncing for navigation
+let navigationTimeout = null;
+const NAVIGATION_DEBOUNCE_MS = 300;
+
+// Cache management functions
+function loadActivityCache() {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (data.timestamp && Date.now() - data.timestamp < 24 * 60 * 60 * 1000) { // 24h expiry
+                activityCache = new Map(data.activities);
+                lastCacheUpdate = data.timestamp;
+                console.log('Loaded activity cache with', activityCache.size, 'days');
+                return true;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading activity cache:', error);
+    }
+    return false;
+}
+
+function saveActivityCache() {
+    try {
+        const data = {
+            activities: Array.from(activityCache.entries()),
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        console.log('Saved activity cache with', activityCache.size, 'days');
+    } catch (error) {
+        console.error('Error saving activity cache:', error);
+    }
+}
+
+function addToActivityCache(dateString, activities) {
+    activityCache.set(dateString, activities);
+    lastCacheUpdate = Date.now();
+    saveActivityCache();
+}
+
+function getFromActivityCache(dateString) {
+    // Always fetch fresh data for today
+    const today = new Date().toDateString();
+    if (dateString === today) {
+        return null; // Force fresh fetch for today
+    }
+    
+    // Check if cache is still fresh (3 minutes for historical data)
+    if (lastCacheUpdate && Date.now() - lastCacheUpdate < CACHE_EXPIRY_MS) {
+        return activityCache.get(dateString) || null;
+    }
+    
+    return null; // Cache expired
+}
+
+// Debounced activity display update
+function debouncedUpdateActivityDisplay() {
+    if (navigationTimeout) {
+        clearTimeout(navigationTimeout);
+    }
+    
+    navigationTimeout = setTimeout(() => {
+        updateActivityDisplay();
+    }, NAVIGATION_DEBOUNCE_MS);
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    loadActivityCache(); // Load cache first
     checkAuthState();
     loadStreakCount();
     loadTodayStatus();
@@ -214,6 +289,9 @@ async function recordMention() {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             mentionedBy: currentUser
         });
+        
+        // Invalidate today's cache since new mention was added
+        activityCache.delete(today);
 
         // Update user's total mention count (use normalized username for document ID)
         const normalizedCurrentUser = currentUser.toLowerCase();
@@ -661,7 +739,7 @@ function setupActivityNavigation() {
 
     prevBtn.onclick = () => {
         currentActivityDate.setDate(currentActivityDate.getDate() - 1);
-        updateActivityDisplay();
+        debouncedUpdateActivityDisplay();
     };
 
     nextBtn.onclick = () => {
@@ -671,13 +749,13 @@ function setupActivityNavigation() {
         
         if (tomorrow <= today) {
             currentActivityDate.setDate(currentActivityDate.getDate() + 1);
-            updateActivityDisplay();
+            debouncedUpdateActivityDisplay();
         }
     };
 
     todayBtn.onclick = () => {
         currentActivityDate = new Date();
-        updateActivityDisplay();
+        debouncedUpdateActivityDisplay();
     };
 }
 
@@ -723,37 +801,50 @@ async function updateActivityDisplay() {
             nextBtn.disabled = !canGoNext;
         }
 
-        // Get activity for selected date
+        // Get activity for selected date - check cache first
         const dateString = currentActivityDate.toDateString();
-        const dayActivity = await db.collection('userMentions')
-            .where('date', '==', dateString)
-            .get();
+        let activities = getFromActivityCache(dateString);
+        
+        if (!activities) {
+            console.log('Cache miss for', dateString, '- fetching from Firebase');
+            const dayActivity = await db.collection('userMentions')
+                .where('date', '==', dateString)
+                .get();
+                
+            // Convert to array and sort by timestamp (newest first)
+            activities = [];
+            dayActivity.forEach(doc => {
+                const data = doc.data();
+                if (data.timestamp) {
+                    activities.push({
+                        username: data.mentionedBy,
+                        timestamp: data.timestamp.toDate(),
+                        reason: data.reason || null,
+                        id: doc.id
+                    });
+                }
+            });
+
+            activities.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Cache the results (except for today)
+            const today = new Date().toDateString();
+            if (dateString !== today) {
+                addToActivityCache(dateString, activities);
+            }
+        } else {
+            console.log('Cache hit for', dateString);
+        }
 
         // Hide loading
         if (activityLoading) {
             activityLoading.style.display = 'none';
         }
 
-        if (dayActivity.empty) {
+        if (!activities || activities.length === 0) {
             activityList.innerHTML = '<div class="no-activity">Немає активності за цей день</div>';
             return;
         }
-
-        // Convert to array and sort by timestamp (newest first)
-        const activities = [];
-        dayActivity.forEach(doc => {
-            const data = doc.data();
-            if (data.timestamp) {
-                activities.push({
-                    username: data.mentionedBy,
-                    timestamp: data.timestamp.toDate(),
-                    reason: data.reason || null,
-                    id: doc.id
-                });
-            }
-        });
-
-        activities.sort((a, b) => b.timestamp - a.timestamp);
 
         // Display activities
         activities.forEach(activity => {
