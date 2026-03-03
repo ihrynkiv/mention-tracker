@@ -60,6 +60,25 @@
                             <p>Завантаження статистики...</p>
                         </div>
                     </div>
+
+                    <div class="activity-log-section">
+                        <div class="activity-log-header">
+                            <h3>Активність користувачів</h3>
+                            <div class="date-navigation">
+                                <button class="nav-btn" id="prevDate">‹</button>
+                                <span class="current-date" id="currentDate">Сьогодні</span>
+                                <button class="nav-btn" id="nextDate">›</button>
+                                <button class="today-btn" id="todayBtn">Сьогодні</button>
+                            </div>
+                        </div>
+                        <div class="activity-content">
+                            <div id="activityLoading" class="loading-indicator" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <p>Завантаження активності...</p>
+                            </div>
+                            <div id="activityList" class="activity-list"></div>
+                        </div>
+                    </div>
                     
                     <div class="charts-section">
                         <div class="chart-container">

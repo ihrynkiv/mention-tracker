@@ -549,6 +549,133 @@ body {
     box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
 
+.activity-log-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.activity-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.activity-log-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.4em;
+}
+
+.date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn:hover {
+    background: #5a6fd8;
+    transform: scale(1.1);
+}
+
+.nav-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.current-date {
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
+    color: #333;
+}
+
+.today-btn {
+    background: #51cf66;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.today-btn:hover {
+    background: #40c057;
+    transform: translateY(-1px);
+}
+
+.activity-content {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin: 8px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.activity-user {
+    font-weight: 600;
+    color: #333;
+}
+
+.activity-time {
+    color: #666;
+    font-size: 0.9em;
+    font-family: 'Courier New', monospace;
+}
+
+.no-activity {
+    text-align: center;
+    color: #666;
+    padding: 40px;
+    font-style: italic;
+}
+
 .charts-section {
     margin-top: 40px;
     padding-top: 30px;

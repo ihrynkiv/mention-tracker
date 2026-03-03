@@ -416,8 +416,11 @@ async function loadUserStats() {
             statsContainer.appendChild(statItem);
         });
 
-        // Load charts after user stats
-        await loadCharts();
+        // Load charts and activity log after user stats
+        await Promise.all([
+            loadCharts(),
+            loadActivityLog()
+        ]);
 
     } catch (error) {
         console.error('Error loading user stats:', error);
@@ -632,6 +635,144 @@ async function loadHourlyChart() {
 
     } catch (error) {
         console.error('Error loading hourly chart:', error);
+    }
+}
+
+// Activity Log functionality
+let currentActivityDate = new Date();
+
+async function loadActivityLog() {
+    try {
+        await updateActivityDisplay();
+        setupActivityNavigation();
+    } catch (error) {
+        console.error('Error loading activity log:', error);
+    }
+}
+
+function setupActivityNavigation() {
+    const prevBtn = document.getElementById('prevDate');
+    const nextBtn = document.getElementById('nextDate');
+    const todayBtn = document.getElementById('todayBtn');
+    
+    if (!prevBtn || !nextBtn || !todayBtn) return;
+
+    prevBtn.onclick = () => {
+        currentActivityDate.setDate(currentActivityDate.getDate() - 1);
+        updateActivityDisplay();
+    };
+
+    nextBtn.onclick = () => {
+        const today = new Date();
+        const tomorrow = new Date(currentActivityDate);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        if (tomorrow <= today) {
+            currentActivityDate.setDate(currentActivityDate.getDate() + 1);
+            updateActivityDisplay();
+        }
+    };
+
+    todayBtn.onclick = () => {
+        currentActivityDate = new Date();
+        updateActivityDisplay();
+    };
+}
+
+async function updateActivityDisplay() {
+    try {
+        const activityLoading = document.getElementById('activityLoading');
+        const activityList = document.getElementById('activityList');
+        const currentDateSpan = document.getElementById('currentDate');
+        const nextBtn = document.getElementById('nextDate');
+        
+        if (!activityList || !currentDateSpan) return;
+
+        // Show loading
+        if (activityLoading) {
+            activityLoading.style.display = 'block';
+        }
+        activityList.innerHTML = '';
+
+        // Update date display
+        const today = new Date();
+        const isToday = currentActivityDate.toDateString() === today.toDateString();
+        const isYesterday = currentActivityDate.toDateString() === 
+            new Date(today.getTime() - 24 * 60 * 60 * 1000).toDateString();
+
+        if (isToday) {
+            currentDateSpan.textContent = 'Сьогодні';
+        } else if (isYesterday) {
+            currentDateSpan.textContent = 'Вчора';
+        } else {
+            currentDateSpan.textContent = currentActivityDate.toLocaleDateString('uk-UA', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short'
+            });
+        }
+
+        // Enable/disable next button
+        if (nextBtn) {
+            const canGoNext = currentActivityDate.toDateString() < today.toDateString();
+            nextBtn.disabled = !canGoNext;
+        }
+
+        // Get activity for selected date
+        const dateString = currentActivityDate.toDateString();
+        const dayActivity = await db.collection('userMentions')
+            .where('date', '==', dateString)
+            .get();
+
+        // Hide loading
+        if (activityLoading) {
+            activityLoading.style.display = 'none';
+        }
+
+        if (dayActivity.empty) {
+            activityList.innerHTML = '<div class="no-activity">Немає активності за цей день</div>';
+            return;
+        }
+
+        // Convert to array and sort by timestamp (newest first)
+        const activities = [];
+        dayActivity.forEach(doc => {
+            const data = doc.data();
+            if (data.timestamp) {
+                activities.push({
+                    username: data.mentionedBy,
+                    timestamp: data.timestamp.toDate(),
+                    id: doc.id
+                });
+            }
+        });
+
+        activities.sort((a, b) => b.timestamp - a.timestamp);
+
+        // Display activities
+        activities.forEach(activity => {
+            const timeString = activity.timestamp.toLocaleTimeString('uk-UA', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+                <span class="activity-user">${activity.username}</span>
+                <span class="activity-time">${timeString}</span>
+            `;
+            
+            activityList.appendChild(activityItem);
+        });
+
+    } catch (error) {
+        console.error('Error updating activity display:', error);
+        const activityList = document.getElementById('activityList');
+        if (activityList) {
+            activityList.innerHTML = '<div class="no-activity">Помилка завантаження активності</div>';
+        }
     }
 }
 
