@@ -36,9 +36,11 @@ function saveMinigameProgress() {
 }
 
 // Setup minigames tab content
-function setupMinigameTab() {
+async function setupMinigameTab() {
     const minigamesContainer = document.getElementById('minigamesContainer');
     if (!minigamesContainer) return;
+
+    const mazeStatusHtml = await getMazeStatus();
 
     minigamesContainer.innerHTML = `
         <div class="minigames-header">
@@ -53,7 +55,7 @@ function setupMinigameTab() {
                     <h3>Лабіринт дня</h3>
                     <p>Допоможи Михайлу дістатитись Краківської</p>
                     <div class="challenge-status" id="mazeStatus">
-                        ${getMazeStatus()}
+                        ${mazeStatusHtml}
                     </div>
                 </div>
             </div>
@@ -84,14 +86,14 @@ function setupMinigameTab() {
 }
 
 // Get today's maze completion status
-function getMazeStatus() {
+async function getMazeStatus() {
     const today = new Date().toDateString();
-    const progress = minigameProgress[today]?.maze;
+    const isCompleted = await checkMazeCompletion(today);
     
-    if (progress?.completed) {
-        return `<span class="completed">✅ Пройдено за ${progress.time}с</span>`;
-    } else if (progress?.attempts > 0) {
-        return `<span class="in-progress">🎯 Спроб: ${progress.attempts}</span>`;
+    if (isCompleted) {
+        const progress = minigameProgress[today]?.maze;
+        const timeText = progress?.time ? ` за ${progress.time}с` : '';
+        return `<span class="completed">✅ Пройдено${timeText}</span>`;
     } else {
         return '<span class="not-started">▶️ Почати</span>';
     }

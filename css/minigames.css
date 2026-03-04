@@ -236,6 +236,160 @@
     }
 }
 
+/* Maze Leaderboard Styles */
+.maze-leaderboard {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.leaderboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.leaderboard-title {
+    flex: 1;
+    text-align: center;
+}
+
+.leaderboard-title h3 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+    font-size: 24px;
+}
+
+.leaderboard-title p {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.leaderboard-content {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.leaderboard-entry {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.leaderboard-entry:last-child {
+    margin-bottom: 0;
+}
+
+.leaderboard-entry.rank-1 {
+    background: linear-gradient(135deg, #f7dc6f 0%, #f4d03f 100%);
+    border: 2px solid #f1c40f;
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(241, 196, 15, 0.3);
+}
+
+.leaderboard-entry.rank-2 {
+    background: linear-gradient(135deg, #d5d8dc 0%, #aeb6bf 100%);
+    border: 2px solid #95a5a6;
+}
+
+.leaderboard-entry.rank-3 {
+    background: linear-gradient(135deg, #e8943c 0%, #dc7633 100%);
+    border: 2px solid #e67e22;
+    color: white;
+}
+
+.leaderboard-entry:not(.rank-1):not(.rank-2):not(.rank-3) {
+    background: linear-gradient(135deg, #ecf0f1 0%, #d5dbdb 100%);
+    border: 1px solid #bdc3c7;
+}
+
+.leaderboard-entry.current-user {
+    border-width: 3px;
+    border-style: dashed;
+    animation: pulseHighlight 2s ease-in-out infinite;
+}
+
+.rank-icon {
+    font-size: 28px;
+    margin-right: 15px;
+    font-weight: bold;
+    text-align: center;
+    min-width: 40px;
+}
+
+.rank-1 .rank-icon {
+    font-size: 32px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    animation: crownGlow 3s ease-in-out infinite alternate;
+}
+
+.player-name {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.rank-3 .player-name {
+    color: white;
+}
+
+.completion-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.completion-stats .time {
+    color: #e74c3c;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.completion-stats .moves {
+    color: #3498db;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.rank-3 .completion-stats .time,
+.rank-3 .completion-stats .moves {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.no-completions {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 18px;
+    color: #7f8c8d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 2px dashed #bdc3c7;
+}
+
+.leaderboard-footer {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+}
+
 /* Animations */
 @keyframes gameComplete {
     0% { transform: scale(1); }
@@ -245,4 +399,50 @@
 
 .game-complete {
     animation: gameComplete 0.6s ease-in-out;
+}
+
+@keyframes pulseHighlight {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+    50% { box-shadow: 0 0 0 8px rgba(52, 152, 219, 0); }
+}
+
+@keyframes crownGlow {
+    0% { 
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        transform: scale(1);
+    }
+    100% { 
+        text-shadow: 2px 2px 8px rgba(241, 196, 15, 0.8), 0 0 15px rgba(255, 215, 0, 0.6);
+        transform: scale(1.1);
+    }
+}
+
+/* Mobile responsive for leaderboard */
+@media (max-width: 768px) {
+    .leaderboard-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .leaderboard-entry {
+        padding: 12px 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .rank-icon {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+    
+    .completion-stats {
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .player-name {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
 }

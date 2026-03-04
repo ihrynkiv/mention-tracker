@@ -3,6 +3,58 @@
  * Date-seeded maze generation for daily consistency
  */
 
+// Firebase integration for maze completion
+async function checkMazeCompletion(dateString) {
+    if (!currentUser) return false;
+    
+    try {
+        const docId = `${dateString}_${currentUser}`;
+        const doc = await db.collection('mazeCompletions').doc(docId).get();
+        return doc.exists;
+    } catch (error) {
+        console.error('Error checking maze completion:', error);
+        return false;
+    }
+}
+
+async function saveMazeCompletion(dateString, completionData) {
+    if (!currentUser) return;
+    
+    try {
+        const docId = `${dateString}_${currentUser}`;
+        await db.collection('mazeCompletions').doc(docId).set({
+            username: currentUser,
+            date: dateString,
+            completionTime: completionData.time,
+            moves: completionData.moves,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('Maze completion saved to Firebase');
+    } catch (error) {
+        console.error('Error saving maze completion:', error);
+    }
+}
+
+async function getTodaysMazeLeaderboard(dateString) {
+    try {
+        const completions = await db.collection('mazeCompletions')
+            .where('date', '==', dateString)
+            .orderBy('completionTime')
+            .limit(10)
+            .get();
+        
+        const leaderboard = [];
+        completions.forEach(doc => {
+            leaderboard.push(doc.data());
+        });
+        
+        return leaderboard;
+    } catch (error) {
+        console.error('Error fetching maze leaderboard:', error);
+        return [];
+    }
+}
+
 // Maze game state
 let mazeGame = {
     width: 15,
@@ -84,9 +136,18 @@ function generateDailyMaze() {
 }
 
 // Start the maze game
-function startMazeGame() {
+async function startMazeGame() {
     const gameArea = document.getElementById('gameArea');
     if (!gameArea) return;
+    
+    // Check if user already completed today's maze
+    const today = new Date().toDateString();
+    const hasCompleted = await checkMazeCompletion(today);
+    
+    if (hasCompleted) {
+        showMazeLeaderboard();
+        return;
+    }
     
     // Generate today's maze
     mazeGame.maze = generateDailyMaze();
@@ -262,28 +323,32 @@ function startMazeTimer() {
 }
 
 // Complete the maze game
-function completeMazeGame() {
+async function completeMazeGame() {
     mazeGame.gameActive = false;
     clearInterval(mazeTimer);
     
     const elapsed = Math.floor((Date.now() - mazeGame.startTime) / 1000);
     const today = new Date().toDateString();
     
-    // Save progress
+    const completionData = {
+        time: elapsed,
+        moves: mazeGame.moves
+    };
+    
+    // Save to Firebase
+    await saveMazeCompletion(today, completionData);
+    
+    // Save local progress
     if (!minigameProgress[today]) {
         minigameProgress[today] = {};
     }
     
-    const currentBest = minigameProgress[today].maze?.time;
-    if (!currentBest || elapsed < currentBest) {
-        minigameProgress[today].maze = {
-            completed: true,
-            time: elapsed,
-            moves: mazeGame.moves,
-            attempts: (minigameProgress[today].maze?.attempts || 0) + 1
-        };
-        saveMinigameProgress();
-    }
+    minigameProgress[today].maze = {
+        completed: true,
+        time: elapsed,
+        moves: mazeGame.moves
+    };
+    saveMinigameProgress();
     
     // Show completion message
     showNotification(`🎉 Михайло дістався Краківської! Час: ${elapsed}с, Ходів: ${mazeGame.moves}`, 'success');
@@ -291,10 +356,65 @@ function completeMazeGame() {
     // Update status in main menu
     updateChallengeStatus('maze', `<span class="completed">✅ Пройдено за ${elapsed}с</span>`);
     
-    // Close game after delay
+    // Show leaderboard after delay
     setTimeout(() => {
-        closeMazeGame();
+        showMazeLeaderboard();
     }, 2000);
+}
+
+// Show maze leaderboard
+async function showMazeLeaderboard() {
+    const gameArea = document.getElementById('gameArea');
+    if (!gameArea) return;
+    
+    const today = new Date().toDateString();
+    const leaderboard = await getTodaysMazeLeaderboard(today);
+    
+    let leaderboardHtml = '';
+    if (leaderboard.length === 0) {
+        leaderboardHtml = '<div class="no-completions">Ще ніхто не пройшов сьогоднішній лабіринт 🤔</div>';
+    } else {
+        leaderboardHtml = leaderboard.map((entry, index) => {
+            const rank = index + 1;
+            const isCurrentUser = entry.username === currentUser;
+            const crownIcon = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+            
+            return `
+                <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''} rank-${rank}">
+                    <div class="rank-icon">${crownIcon}</div>
+                    <div class="player-name">${entry.username}</div>
+                    <div class="completion-stats">
+                        <span class="time">⏱️ ${entry.completionTime}с</span>
+                        <span class="moves">👣 ${entry.moves}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    gameArea.style.display = 'block';
+    gameArea.innerHTML = `
+        <div class="maze-leaderboard">
+            <div class="leaderboard-header">
+                <button class="back-btn" onclick="closeMazeGame()">← Назад</button>
+                <div class="leaderboard-title">
+                    <h3>🏆 Сьогоднішні Рекорди</h3>
+                    <p>Лабіринт "Допоможи Михайлу дістатитись Краківської"</p>
+                </div>
+            </div>
+            
+            <div class="leaderboard-content">
+                ${leaderboardHtml}
+            </div>
+            
+            <div class="leaderboard-footer">
+                <p>💡 Новий лабіринт завтра!</p>
+            </div>
+        </div>
+    `;
+    
+    // Scroll to game area
+    gameArea.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Close maze game
