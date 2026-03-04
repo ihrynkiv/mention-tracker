@@ -88,11 +88,10 @@ async function setupMinigameTab() {
 // Get today's maze completion status
 async function getMazeStatus() {
     const today = new Date().toDateString();
-    const isCompleted = await checkMazeCompletion(today);
+    const completionData = await getUserMazeCompletion(today);
     
-    if (isCompleted) {
-        const progress = minigameProgress[today]?.maze;
-        const timeText = progress?.time ? ` за ${progress.time}с` : '';
+    if (completionData) {
+        const timeText = completionData.completionTime ? ` за ${completionData.completionTime}с` : '';
         return `<span class="completed">✅ Пройдено${timeText}</span>`;
     } else {
         return '<span class="not-started">▶️ Почати</span>';

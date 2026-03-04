@@ -1240,6 +1240,13 @@ const PERSONAL_ACHIEVEMENTS = [
         description: 'Персональна нагорода Лілі за її вчинки у реальному житті',
         unlockedDescription: 'Дала Михайлу на горіхи 🥜',
         requirement: { type: 'manual', value: 0 }
+    },
+    {
+        id: 'maze_completion',
+        icon: '🧭',
+        title: 'Дістався Краківської',
+        description: 'Допоміг Михайлу знайти шлях до Краківської',
+        requirement: { type: 'maze_game', value: 1 }
     }
 ];
 

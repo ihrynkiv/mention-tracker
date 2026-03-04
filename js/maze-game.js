@@ -55,6 +55,47 @@ async function getTodaysMazeLeaderboard(dateString) {
     }
 }
 
+// Get user's maze completion data from Firebase
+async function getUserMazeCompletion(dateString) {
+    if (!currentUser) return null;
+    
+    try {
+        const docId = `${dateString}_${currentUser}`;
+        const doc = await db.collection('mazeCompletions').doc(docId).get();
+        if (doc.exists) {
+            return doc.data();
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting user maze completion:', error);
+        return null;
+    }
+}
+
+// Check and award maze completion achievement
+async function checkMazeCompletionAchievement() {
+    if (!currentUser) return;
+    
+    try {
+        // Check if user already has this achievement
+        const achievementId = `${currentUser}_personal_maze_completion`;
+        const achievementDoc = await db.collection('personalAchievements').doc(achievementId).get();
+        
+        if (!achievementDoc.exists) {
+            // Award the achievement
+            await db.collection('personalAchievements').doc(achievementId).set({
+                username: currentUser,
+                achievementId: 'maze_completion',
+                unlockedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            showNotification('🏆 Досягнення відкрито: Дістався Краківської!', 'success');
+        }
+    } catch (error) {
+        console.error('Error checking maze completion achievement:', error);
+    }
+}
+
 // Maze game state
 let mazeGame = {
     width: 15,
@@ -338,17 +379,8 @@ async function completeMazeGame() {
     // Save to Firebase
     await saveMazeCompletion(today, completionData);
     
-    // Save local progress
-    if (!minigameProgress[today]) {
-        minigameProgress[today] = {};
-    }
-    
-    minigameProgress[today].maze = {
-        completed: true,
-        time: elapsed,
-        moves: mazeGame.moves
-    };
-    saveMinigameProgress();
+    // Check and award personal achievement
+    await checkMazeCompletionAchievement();
     
     // Show completion message
     showNotification(`🎉 Михайло дістався Краківської! Час: ${elapsed}с, Ходів: ${mazeGame.moves}`, 'success');
