@@ -1,0 +1,248 @@
+/* Minigames Styles */
+
+.minigames-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.minigames-header h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.minigames-header p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.daily-challenges {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.challenge-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.challenge-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.challenge-card.coming-soon {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.challenge-card.coming-soon:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.challenge-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.challenge-info h3 {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    text-align: center;
+}
+
+.challenge-info p {
+    margin: 0 0 15px 0;
+    opacity: 0.9;
+    text-align: center;
+    font-size: 14px;
+}
+
+.challenge-status {
+    text-align: center;
+    font-weight: 600;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.challenge-status .completed {
+    color: #2ecc71;
+}
+
+.challenge-status .in-progress {
+    color: #f39c12;
+}
+
+.challenge-status .not-started {
+    color: #ecf0f1;
+}
+
+/* Game Area Styles */
+.game-area {
+    background: #ecf0f1;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Maze Game Styles */
+.maze-game {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.maze-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.back-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #c0392b;
+}
+
+.maze-info h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.maze-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+.maze-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#mazeCanvas {
+    border: 2px solid #34495e;
+    border-radius: 8px;
+}
+
+.maze-controls {
+    text-align: center;
+}
+
+.control-instructions {
+    margin-bottom: 15px;
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.control-buttons {
+    display: inline-block;
+}
+
+.control-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.control-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .maze-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .maze-stats {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .daily-challenges {
+        grid-template-columns: 1fr;
+    }
+    
+    #mazeCanvas {
+        width: 100%;
+        height: auto;
+    }
+    
+    .maze-container {
+        padding: 10px;
+    }
+    
+    .control-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+    }
+    
+    .control-instructions {
+        font-size: 13px;
+    }
+}
+
+/* Animations */
+@keyframes gameComplete {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.game-complete {
+    animation: gameComplete 0.6s ease-in-out;
+}
