@@ -1866,6 +1866,7 @@ function showTab(tabName) {
     document.getElementById('trackingTab').style.display = 'none';
     document.getElementById('statsTab').style.display = 'none';
     document.getElementById('achievementsTab').style.display = 'none';
+    document.getElementById('minigamesTab').style.display = 'none';
 
     // Remove active class from all buttons
     document.querySelectorAll('.tab-button').forEach(btn => {
@@ -1915,6 +1916,13 @@ function showTab(tabName) {
         }
 
         loadAchievements();
+    } else if (tabName === 'minigames') {
+        document.getElementById('minigamesTab').style.display = 'block';
+        document.querySelectorAll('.tab-button')[3].classList.add('active');
+        // Initialize minigames if not already done
+        if (typeof setupMinigameTab === 'function') {
+            setupMinigameTab();
+        }
     }
 }
 
