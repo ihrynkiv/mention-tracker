@@ -86,7 +86,8 @@ async function checkMazeCompletionAchievement() {
             await db.collection('personalAchievements').doc(achievementId).set({
                 username: currentUser,
                 achievementId: 'maze_completion',
-                unlockedAt: firebase.firestore.FieldValue.serverTimestamp()
+                unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                unlockedDate: new Date().toLocaleDateString('uk-UA')
             });
             
             showNotification('🏆 Досягнення відкрито: Дістався Краківської!', 'success');

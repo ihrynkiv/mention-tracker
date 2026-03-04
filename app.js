@@ -1539,7 +1539,7 @@ async function loadAchievements() {
             achievementEl.className = className;
 
             let statusText = isUnlocked
-                ? `Відкрито: ${unlockedData[achievement.id].unlockedDate}`
+                ? `Відкрито: ${unlockedData[achievement.id].unlockedDate || 'Раніше'}`
                 : 'Заблоковано';
 
             // Add extra info for sad achievement
