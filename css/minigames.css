@@ -477,3 +477,268 @@
         margin-bottom: 5px;
     }
 }
+
+/* Snake Game Styles */
+.snake-game {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.snake-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+.snake-info h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.snake-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+.snake-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#snakeCanvas {
+    border: 3px solid #34495e;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    touch-action: none;
+    user-select: none;
+}
+
+.food-legend {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.food-item {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 2px solid #dee2e6;
+    color: #495057;
+}
+
+.snake-controls {
+    text-align: center;
+}
+
+.game-instructions {
+    margin-bottom: 15px;
+    color: #7f8c8d;
+}
+
+.game-instructions p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+}
+
+.start-btn.pause {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.start-btn.pause:hover {
+    box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+}
+
+/* Game Over Modal */
+.game-over-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    max-width: 90%;
+    width: 350px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.modal-content p {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #7f8c8d;
+}
+
+.modal-content strong {
+    color: #e74c3c;
+    font-size: 18px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.restart-btn, .close-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.restart-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+}
+
+.restart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+}
+
+.close-btn {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    color: white;
+}
+
+.close-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+}
+
+/* Food eaten effect */
+.food-eaten-effect {
+    position: fixed;
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 16px;
+    pointer-events: none;
+    z-index: 1500;
+    transform: translate(-50%, -50%);
+    animation: foodEatenFloat 1.5s ease-out forwards;
+}
+
+@keyframes foodEatenFloat {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100px) scale(1.2);
+    }
+}
+
+/* Mobile responsive for snake game */
+@media (max-width: 768px) {
+    .snake-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .snake-stats {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .snake-container {
+        padding: 15px;
+    }
+    
+    #snakeCanvas {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .food-legend {
+        gap: 8px;
+    }
+    
+    .food-item {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        width: 90%;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .restart-btn, .close-btn {
+        width: 100%;
+        padding: 12px 16px;
+    }
+}
