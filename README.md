@@ -46,6 +46,25 @@ service cloud.firestore {
     match /mentions/{document=**} {
       allow read, write: if true;
     }
+    
+    // Allow read/write access to userMentions collection
+    match /userMentions/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Allow read/write access to achievements collections
+    match /achievements/{document=**} {
+      allow read, write: if true;
+    }
+    
+    match /personalAchievements/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Allow read/write access to maze completions
+    match /mazeCompletions/{document=**} {
+      allow read, write: if true;
+    }
   }
 }
 ```

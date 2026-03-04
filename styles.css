@@ -777,7 +777,23 @@ body {
     }
 
     .tracking-content h2 {
-        font-size: 2em;
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+    
+    /* Make all mobile titles more compact */
+    h2, h3 {
+        font-size: 1.4em !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .minigames-header h2 {
+        font-size: 1.5em !important;
+    }
+    
+    .minigames-header p {
+        font-size: 14px !important;
+        margin-bottom: 15px !important;
     }
 
     .yes-button {

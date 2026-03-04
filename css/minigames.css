@@ -216,6 +216,37 @@
         grid-template-columns: 1fr;
     }
     
+    /* More compact challenge cards on mobile */
+    .challenge-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .challenge-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    
+    .challenge-info h3 {
+        font-size: 18px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .challenge-info p {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+        line-height: 1.3;
+    }
+    
+    .challenge-status {
+        font-size: 12px !important;
+        padding: 6px 10px;
+    }
+    
+    .minigames-header {
+        margin-bottom: 20px;
+    }
+    
     #mazeCanvas {
         width: 100%;
         height: auto;
