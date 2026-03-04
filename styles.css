@@ -750,6 +750,23 @@ body {
     background: #f8f9fa;
 }
 
+/* Tab responsive design */
+.tab-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.tab-icon {
+    font-size: 20px;
+}
+
+.tab-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 10px;
@@ -779,6 +796,21 @@ body {
         position: static;
         text-align: center;
         margin-top: 20px;
+    }
+    
+    /* Hide tab text on mobile, show only icons */
+    .tab-text {
+        display: none;
+    }
+    
+    .tab-icon {
+        font-size: 24px;
+    }
+    
+    .tab-button {
+        gap: 0;
+        min-width: 60px;
+        padding: 12px 8px;
     }
 }
 

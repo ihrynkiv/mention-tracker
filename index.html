@@ -28,10 +28,22 @@
             </div>
             
             <nav class="tabs">
-                <button class="tab-button active" onclick="showTab('tracking')">Трекінг</button>
-                <button class="tab-button" onclick="showTab('stats')">Статистика</button>
-                <button class="tab-button" onclick="showTab('achievements')">Досягнення</button>
-                <button class="tab-button" onclick="showTab('minigames')">🎮 Ігри</button>
+                <button class="tab-button active" onclick="showTab('tracking')" title="Трекінг">
+                    <span class="tab-icon">🔥</span>
+                    <span class="tab-text">Трекінг</span>
+                </button>
+                <button class="tab-button" onclick="showTab('stats')" title="Статистика">
+                    <span class="tab-icon">📊</span>
+                    <span class="tab-text">Статистика</span>
+                </button>
+                <button class="tab-button" onclick="showTab('achievements')" title="Досягнення">
+                    <span class="tab-icon">🏆</span>
+                    <span class="tab-text">Досягнення</span>
+                </button>
+                <button class="tab-button" onclick="showTab('minigames')" title="Міні-Ігри">
+                    <span class="tab-icon">🎮</span>
+                    <span class="tab-text">Ігри</span>
+                </button>
             </nav>
 
             <div class="tab-content" id="trackingTab">
