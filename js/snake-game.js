@@ -1,5 +1,5 @@
 /**
- * Snake Game - "Михайло збирає чаї та зілля"
+ * Snake Game - "Михайло збирає зілля"
  * Mobile-first with swipe controls and Ukrainian food theme
  */
 
@@ -42,7 +42,7 @@ function startSnakeGame() {
             <div class="snake-header">
                 <button class="back-btn" onclick="closeSnakeGame()">← Назад</button>
                 <div class="snake-info">
-                    <h3>🐍 Михайло збирає чаї та зілля</h3>
+                    <h3>🐍 Михайло збирає зілля</h3>
                     <div class="snake-stats">
                         <span>Рахунок: <span id="snakeScore">0</span></span>
                         <span>Довжина: <span id="snakeLength">1</span></span>

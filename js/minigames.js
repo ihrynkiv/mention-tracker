@@ -63,7 +63,7 @@ async function setupMinigameTab() {
             <div class="challenge-card" onclick="startSnakeGame()">
                 <div class="challenge-icon">🐍</div>
                 <div class="challenge-info">
-                    <h3>Михайло збирає чаї та зілля</h3>
+                    <h3>Михайло збирає зілля</h3>
                     <p>Допоможи зібрати ☕ чай, 🍫 какао та 🌿 зілля-мазілля</p>
                     <div class="challenge-status" id="snakeStatus">
                         <span class="not-started">▶️ Грати</span>
