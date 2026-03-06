@@ -1,0 +1,384 @@
+/* Mobile Snake Game Styles */
+
+/* Mobile Snake Game Fullscreen */
+.snake-fullscreen-mobile {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    z-index: 9999;
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 12px;
+    box-sizing: border-box;
+    justify-content: space-between;
+}
+
+/* Mobile Header */
+.snake-header-mobile {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 12px 16px;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.snake-fullscreen-mobile .snake-info h3 {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 18px;
+    margin: 0 0 8px 0;
+    text-align: center;
+}
+
+.snake-fullscreen-mobile .snake-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 14px;
+}
+
+/* Mobile Container */
+.snake-container-mobile {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    margin: 8px 0;
+}
+
+.snake-fullscreen-mobile #snakeCanvas {
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    margin-bottom: 8px;
+}
+
+.snake-fullscreen-mobile .food-legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.snake-fullscreen-mobile .food-item {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+
+/* Mobile Instructions */
+.snake-instructions-mobile {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 12px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.snake-instructions-mobile p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Countdown Overlay */
+.countdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.countdown-content {
+    text-align: center;
+    color: white;
+}
+
+.countdown-number {
+    font-size: 120px;
+    font-weight: bold;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+    margin-bottom: 20px;
+    color: #2ecc71;
+}
+
+.countdown-text {
+    font-size: 24px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes countdownPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* True Mobile Fullscreen Overlay */
+.mobile-snake-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    z-index: 10001 !important;
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden !important;
+    padding: 8px;
+    box-sizing: border-box;
+    justify-content: space-between;
+    touch-action: manipulation;
+}
+
+.mobile-snake-fullscreen .snake-header {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 8px 12px;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.mobile-snake-fullscreen .snake-info h3 {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 16px;
+    margin: 0 0 6px 0;
+    text-align: center;
+}
+
+.mobile-snake-fullscreen .snake-stats {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 12px;
+}
+
+.mobile-snake-fullscreen .snake-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    margin: 6px 0;
+}
+
+.mobile-snake-fullscreen #snakeCanvas {
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    margin-bottom: 6px;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.mobile-snake-fullscreen .food-legend {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.mobile-snake-fullscreen .food-item {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+}
+
+.mobile-snake-fullscreen .snake-instructions {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 6px 10px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.mobile-snake-fullscreen .snake-instructions p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 11px;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile Game Over Modal */
+.mobile-snake-fullscreen .game-over-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 10002 !important;
+    backdrop-filter: blur(10px);
+}
+
+.mobile-snake-fullscreen .modal-content {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 20px !important;
+    padding: 30px !important;
+    text-align: center !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(15px) !important;
+    max-width: 90% !important;
+    max-height: 80% !important;
+}
+
+.mobile-snake-fullscreen .modal-content h3 {
+    color: white !important;
+    font-size: 24px !important;
+    margin: 0 0 20px 0 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7) !important;
+}
+
+.mobile-snake-fullscreen #finalScore {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px !important;
+    margin: 20px 0 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+.mobile-snake-fullscreen #finalScore p {
+    margin: 8px 0 !important;
+}
+
+.mobile-snake-fullscreen .modal-buttons {
+    display: flex !important;
+    gap: 15px !important;
+    justify-content: center !important;
+    margin-top: 25px !important;
+}
+
+.mobile-snake-fullscreen .modal-buttons button {
+    padding: 12px 20px !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+    min-width: 120px !important;
+    touch-action: manipulation !important;
+}
+
+.mobile-snake-fullscreen .restart-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4) !important;
+}
+
+.mobile-snake-fullscreen .restart-btn:hover,
+.mobile-snake-fullscreen .restart-btn:active {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.6) !important;
+}
+
+.mobile-snake-fullscreen .close-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4) !important;
+}
+
+.mobile-snake-fullscreen .close-btn:hover,
+.mobile-snake-fullscreen .close-btn:active {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6) !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .countdown-number {
+        font-size: 100px;
+    }
+    
+    .countdown-text {
+        font-size: 20px;
+    }
+    
+    .snake-fullscreen-mobile {
+        padding: 8px;
+    }
+    
+    .snake-header-mobile {
+        padding: 8px 12px;
+    }
+    
+    .snake-container-mobile {
+        padding: 8px;
+        margin: 6px 0;
+    }
+    
+    .snake-instructions-mobile {
+        padding: 6px 10px;
+    }
+    
+    .mobile-snake-fullscreen {
+        padding: 6px;
+    }
+    
+    .mobile-snake-fullscreen .snake-header {
+        padding: 6px 10px;
+    }
+    
+    .mobile-snake-fullscreen .snake-container {
+        padding: 6px;
+        margin: 4px 0;
+    }
+    
+    .mobile-snake-fullscreen .snake-instructions {
+        padding: 4px 8px;
+    }
+}
