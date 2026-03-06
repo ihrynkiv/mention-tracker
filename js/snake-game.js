@@ -40,65 +40,118 @@ function startSnakeGame() {
     
     gameArea.style.display = 'block';
     
-    // Different instructions for mobile vs desktop
+    // Check if mobile device
     const isMobile = 'ontouchstart' in window && window.innerWidth <= 768;
-    const instructions = isMobile ? 
-        `<p>📱 Проведіть пальцем будь-де для руху</p>` :
-        `<p>⌨️ Використовуйте клавіші ← ↑ ↓ → для руху</p>`;
     
-    gameArea.innerHTML = `
-        <div class="snake-game" id="snakeGameContainer">
-            <div class="snake-header">
-                <button class="back-btn" onclick="closeSnakeGame()">← Назад</button>
-                <div class="snake-info">
-                    <h3>🐍 Михайло збирає зілля</h3>
-                    <div class="snake-stats">
-                        <span>Рахунок: <span id="snakeScore">0</span></span>
-                        <span>Довжина: <span id="snakeLength">1</span></span>
-                    </div>
-                </div>
-                ${isMobile ? '<button class="fullscreen-btn" onclick="toggleFullscreen()" title="Повний екран">⛶</button>' : ''}
-            </div>
-            
-            <div class="snake-container">
-                <canvas id="snakeCanvas" width="300" height="300"></canvas>
-                <div class="food-legend">
-                    <div class="food-item">☕ Чай (+10)</div>
-                    <div class="food-item">🍫 Какао (+15)</div>
-                    <div class="food-item">🌿 Зілля-мазілля (+25)</div>
-                </div>
-            </div>
-            
-            <div class="snake-controls">
-                <div class="game-instructions">
-                    ${instructions}
-                    <p>🎯 Збирайте їжу, не врізайтеся в стіни!</p>
-                </div>
-                <button class="start-btn" id="snakeStartBtn" onclick="toggleSnakeGame()">Почати гру</button>
-            </div>
-            
-            <div id="gameOverModal" class="game-over-modal" style="display: none;">
-                <div class="modal-content">
-                    <h3>🎮 Гру закінчено!</h3>
-                    <div id="finalScore"></div>
-                    <div class="modal-buttons">
-                        <button onclick="restartSnakeGame()" class="restart-btn">Грати знову</button>
-                        <button onclick="closeSnakeGame()" class="close-btn">Закрити</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Setup canvas and controls
-    setupSnakeCanvas();
-    setupSnakeControls();
-    
-    // Only auto-enter fullscreen on mobile devices
     if (isMobile) {
+        // Mobile version - simple fullscreen with countdown
+        gameArea.innerHTML = `
+            <div class="snake-game" id="snakeGameContainer">
+                <div class="snake-header-mobile">
+                    <div class="snake-info">
+                        <h3>🐍 Михайло збирає зілля</h3>
+                        <div class="snake-stats">
+                            <span>Рахунок: <span id="snakeScore">0</span></span>
+                            <span>Довжина: <span id="snakeLength">1</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="snake-container-mobile">
+                    <canvas id="snakeCanvas" width="300" height="300"></canvas>
+                    <div class="food-legend">
+                        <div class="food-item">☕ Чай (+10)</div>
+                        <div class="food-item">🍫 Какао (+15)</div>
+                        <div class="food-item">🌿 Зілля-мазілля (+25)</div>
+                    </div>
+                </div>
+                
+                <div class="snake-instructions-mobile">
+                    <p>📱 Проведіть пальцем для руху</p>
+                </div>
+                
+                <!-- Countdown Overlay -->
+                <div id="countdownOverlay" class="countdown-overlay">
+                    <div class="countdown-content">
+                        <div class="countdown-number" id="countdownNumber">3</div>
+                        <div class="countdown-text">Підготуватися...</div>
+                    </div>
+                </div>
+                
+                <div id="gameOverModal" class="game-over-modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>🎮 Гру закінчено!</h3>
+                        <div id="finalScore"></div>
+                        <div class="modal-buttons">
+                            <button onclick="restartSnakeGameMobile()" class="restart-btn">Грати знову</button>
+                            <button onclick="closeSnakeGame()" class="close-btn">Вийти</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Setup canvas and controls
+        setupSnakeCanvas();
+        setupSnakeControls();
+        
+        // Enter fullscreen immediately
         setTimeout(() => {
-            enterFullscreen();
-        }, 300);
+            enterFullscreenMobile();
+            // Start countdown after entering fullscreen
+            setTimeout(() => {
+                startCountdown();
+            }, 500);
+        }, 100);
+        
+    } else {
+        // Desktop version - keep original with start button
+        gameArea.innerHTML = `
+            <div class="snake-game" id="snakeGameContainer">
+                <div class="snake-header">
+                    <button class="back-btn" onclick="closeSnakeGame()">← Назад</button>
+                    <div class="snake-info">
+                        <h3>🐍 Михайло збирає зілля</h3>
+                        <div class="snake-stats">
+                            <span>Рахунок: <span id="snakeScore">0</span></span>
+                            <span>Довжина: <span id="snakeLength">1</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="snake-container">
+                    <canvas id="snakeCanvas" width="300" height="300"></canvas>
+                    <div class="food-legend">
+                        <div class="food-item">☕ Чай (+10)</div>
+                        <div class="food-item">🍫 Какао (+15)</div>
+                        <div class="food-item">🌿 Зілля-мазілля (+25)</div>
+                    </div>
+                </div>
+                
+                <div class="snake-controls">
+                    <div class="game-instructions">
+                        <p>⌨️ Використовуйте клавіші ← ↑ ↓ → для руху</p>
+                        <p>🎯 Збирайте їжу, не врізайтеся в стіни!</p>
+                    </div>
+                    <button class="start-btn" id="snakeStartBtn" onclick="toggleSnakeGame()">Почати гру</button>
+                </div>
+                
+                <div id="gameOverModal" class="game-over-modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>🎮 Гру закінчено!</h3>
+                        <div id="finalScore"></div>
+                        <div class="modal-buttons">
+                            <button onclick="restartSnakeGame()" class="restart-btn">Грати знову</button>
+                            <button onclick="closeSnakeGame()" class="close-btn">Закрити</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Setup canvas and controls
+        setupSnakeCanvas();
+        setupSnakeControls();
     }
     
     // Scroll to game area
@@ -510,7 +563,35 @@ function toggleFullscreen() {
     }
 }
 
-// Enter fullscreen mode
+// Enter fullscreen mode for mobile (simplified)
+function enterFullscreenMobile() {
+    snakeGame.isFullscreen = true;
+    const container = document.getElementById('snakeGameContainer');
+    const gameArea = document.getElementById('gameArea');
+    
+    if (container && gameArea) {
+        // Store original parent for restoration
+        snakeGame.originalParent = container.parentNode;
+        
+        // Add fullscreen classes
+        container.classList.add('snake-fullscreen-mobile');
+        document.body.classList.add('snake-game-active');
+        
+        // Move to body for true fullscreen
+        document.body.appendChild(container);
+        
+        // Resize canvas for fullscreen
+        resizeCanvas();
+        drawGame();
+        
+        // Lock screen orientation on mobile
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('portrait').catch(() => {});
+        }
+    }
+}
+
+// Enter fullscreen mode (desktop - keep original)
 function enterFullscreen() {
     snakeGame.isFullscreen = true;
     const container = document.getElementById('snakeGameContainer');
@@ -609,6 +690,57 @@ function exitFullscreen() {
     }
 }
 
+// Countdown functionality
+function startCountdown() {
+    const overlay = document.getElementById('countdownOverlay');
+    const number = document.getElementById('countdownNumber');
+    const text = document.querySelector('.countdown-text');
+    
+    if (!overlay || !number) return;
+    
+    let count = 3;
+    overlay.style.display = 'flex';
+    
+    const countdownInterval = setInterval(() => {
+        if (count > 0) {
+            number.textContent = count;
+            number.style.animation = 'countdownPulse 1s ease-in-out';
+            
+            setTimeout(() => {
+                number.style.animation = '';
+            }, 1000);
+            
+            count--;
+        } else {
+            number.textContent = 'СТАРТ!';
+            text.textContent = 'Грайте!';
+            number.style.animation = 'countdownPulse 0.5s ease-in-out';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                // Start the game automatically
+                startSnakeGameLoop();
+            }, 500);
+            
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+}
+
+// Restart game for mobile
+function restartSnakeGameMobile() {
+    document.getElementById('gameOverModal').style.display = 'none';
+    
+    initializeSnakeGame();
+    drawGame();
+    updateUI();
+    
+    // Start countdown again
+    setTimeout(() => {
+        startCountdown();
+    }, 500);
+}
+
 // Close snake game
 function closeSnakeGame() {
     stopSnakeGameLoop();
@@ -623,12 +755,44 @@ function closeSnakeGame() {
     
     // Exit fullscreen if active
     if (snakeGame.isFullscreen) {
-        exitFullscreen();
+        exitFullscreenMobile();
         return; // exitFullscreen will handle cleanup
     }
     
     // Clean up and hide game
     document.body.classList.remove('snake-game-active');
+    const gameArea = document.getElementById('gameArea');
+    if (gameArea) {
+        gameArea.style.display = 'none';
+    }
+}
+
+// Exit fullscreen for mobile
+function exitFullscreenMobile() {
+    snakeGame.isFullscreen = false;
+    const container = document.getElementById('snakeGameContainer');
+    
+    if (container && snakeGame.originalParent) {
+        // Remove fullscreen classes
+        container.classList.remove('snake-fullscreen-mobile');
+        document.body.classList.remove('snake-game-active');
+        
+        // Move back to original location
+        snakeGame.originalParent.appendChild(container);
+        
+        // Unlock screen orientation
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+        }
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+    }
+    
+    // Hide game area
     const gameArea = document.getElementById('gameArea');
     if (gameArea) {
         gameArea.style.display = 'none';
