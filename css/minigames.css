@@ -540,7 +540,9 @@
     display: flex !important;
     flex-direction: column;
     overflow: hidden;
-    justify-content: space-between;
+    padding: 15px;
+    box-sizing: border-box;
+    gap: 10px;
 }
 
 /* Hide body scroll when snake game is active */

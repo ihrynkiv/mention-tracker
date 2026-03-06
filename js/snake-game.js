@@ -20,7 +20,7 @@ let snakeGame = {
     touchStartY: 0,
     minSwipeDistance: 30,
     isFullscreen: false,
-    originalGameArea: null
+    originalParent: null
 };
 
 // Ukrainian food items (matching achievements theme)
@@ -39,6 +39,13 @@ function startSnakeGame() {
     initializeSnakeGame();
     
     gameArea.style.display = 'block';
+    
+    // Different instructions for mobile vs desktop
+    const isMobile = 'ontouchstart' in window && window.innerWidth <= 768;
+    const instructions = isMobile ? 
+        `<p>📱 Проведіть пальцем будь-де для руху</p>` :
+        `<p>⌨️ Використовуйте клавіші ← ↑ ↓ → для руху</p>`;
+    
     gameArea.innerHTML = `
         <div class="snake-game" id="snakeGameContainer">
             <div class="snake-header">
@@ -50,7 +57,7 @@ function startSnakeGame() {
                         <span>Довжина: <span id="snakeLength">1</span></span>
                     </div>
                 </div>
-                <button class="fullscreen-btn" onclick="enterFullscreen()" title="Повний екран">⛶</button>
+                ${isMobile ? '<button class="fullscreen-btn" onclick="toggleFullscreen()" title="Повний екран">⛶</button>' : ''}
             </div>
             
             <div class="snake-container">
@@ -64,7 +71,7 @@ function startSnakeGame() {
             
             <div class="snake-controls">
                 <div class="game-instructions">
-                    <p>📱 Проведіть пальцем будь-де для руху</p>
+                    ${instructions}
                     <p>🎯 Збирайте їжу, не врізайтеся в стіни!</p>
                 </div>
                 <button class="start-btn" id="snakeStartBtn" onclick="toggleSnakeGame()">Почати гру</button>
@@ -87,8 +94,8 @@ function startSnakeGame() {
     setupSnakeCanvas();
     setupSnakeControls();
     
-    // Auto-enter fullscreen on mobile (with delay to ensure DOM is ready)
-    if (window.innerWidth <= 768) {
+    // Only auto-enter fullscreen on mobile devices
+    if (isMobile) {
         setTimeout(() => {
             enterFullscreen();
         }, 300);
@@ -156,10 +163,12 @@ function setupSnakeControls() {
     document.removeEventListener('touchmove', preventScrolling);
     document.removeEventListener('keydown', handleKeyPress);
     
-    // Add touch events to entire document for fullscreen gestures
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: false });
-    document.addEventListener('touchmove', preventScrolling, { passive: false });
+    // Add touch events for mobile (only on mobile devices)
+    if ('ontouchstart' in window) {
+        document.addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+        document.addEventListener('touchmove', preventScrolling, { passive: false });
+    }
     
     // Keyboard events for desktop
     document.addEventListener('keydown', handleKeyPress);
@@ -508,8 +517,8 @@ function enterFullscreen() {
     const gameArea = document.getElementById('gameArea');
     
     if (container && gameArea) {
-        // Store original game area for restoration
-        snakeGame.originalGameArea = gameArea;
+        // Store original parent for restoration
+        snakeGame.originalParent = container.parentNode;
         
         // Add fullscreen classes
         container.classList.add('snake-fullscreen');
@@ -558,13 +567,13 @@ function exitFullscreen() {
     snakeGame.isFullscreen = false;
     const container = document.getElementById('snakeGameContainer');
     
-    if (container && snakeGame.originalGameArea) {
+    if (container && snakeGame.originalParent) {
         // Remove fullscreen classes
         container.classList.remove('snake-fullscreen');
         document.body.classList.remove('snake-game-active');
         
         // Move back to original location
-        snakeGame.originalGameArea.appendChild(container);
+        snakeGame.originalParent.appendChild(container);
         
         // Resize canvas for normal mode
         resizeCanvas();
@@ -597,29 +606,20 @@ function closeSnakeGame() {
     
     // Remove event listeners
     document.removeEventListener('keydown', handleKeyPress);
-    document.removeEventListener('touchstart', handleTouchStart);
-    document.removeEventListener('touchend', handleTouchEnd);
-    document.removeEventListener('touchmove', preventScrolling);
+    if ('ontouchstart' in window) {
+        document.removeEventListener('touchstart', handleTouchStart);
+        document.removeEventListener('touchend', handleTouchEnd);
+        document.removeEventListener('touchmove', preventScrolling);
+    }
     
     // Exit fullscreen if active
     if (snakeGame.isFullscreen) {
-        // Reset fullscreen state without calling exitFullscreen to avoid recursion
-        snakeGame.isFullscreen = false;
-        const container = document.getElementById('snakeGameContainer');
-        if (container) {
-            container.classList.remove('snake-fullscreen');
-            document.body.classList.remove('snake-game-active');
-        }
-        
-        // Unlock screen orientation
-        if (screen.orientation && screen.orientation.unlock) {
-            screen.orientation.unlock();
-        }
+        exitFullscreen();
+        return; // exitFullscreen will handle cleanup
     }
     
-    // Clean up body class
+    // Clean up and hide game
     document.body.classList.remove('snake-game-active');
-    
     const gameArea = document.getElementById('gameArea');
     if (gameArea) {
         gameArea.style.display = 'none';
