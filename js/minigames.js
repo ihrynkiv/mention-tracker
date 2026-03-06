@@ -49,25 +49,21 @@ async function setupMinigameTab() {
         </div>
         
         <div class="daily-challenges">
-            <div class="challenge-card" onclick="startMazeGame()">
+            <div class="challenge-card coming-soon">
                 <div class="challenge-icon">🧭</div>
                 <div class="challenge-info">
                     <h3>Лабіринт дня</h3>
                     <p>Допоможи Михайлу дістатитись Краківської</p>
-                    <div class="challenge-status" id="mazeStatus">
-                        ${mazeStatusHtml}
-                    </div>
+                    <div class="challenge-status">Незабаром...</div>
                 </div>
             </div>
             
-            <div class="challenge-card" onclick="startSnakeGame()">
+            <div class="challenge-card coming-soon">
                 <div class="challenge-icon">🐍</div>
                 <div class="challenge-info">
                     <h3>Михайло збирає зілля</h3>
                     <p>Допоможи зібрати ☕ чай, 🍫 какао та 🌿 зілля-мазілля</p>
-                    <div class="challenge-status" id="snakeStatus">
-                        <span class="not-started">▶️ Грати</span>
-                    </div>
+                    <div class="challenge-status">Незабаром...</div>
                 </div>
             </div>
             
