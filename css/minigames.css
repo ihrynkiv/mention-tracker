@@ -120,11 +120,27 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    z-index: 10001;
+    position: relative;
 }
 
 .back-btn:hover {
     background: #c0392b;
+    transform: translateY(-1px);
+}
+
+.snake-fullscreen .back-btn {
+    background: rgba(231, 76, 60, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.snake-fullscreen .back-btn:hover {
+    background: rgba(192, 57, 43, 0.9);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
 }
 
 .maze-info h3 {
@@ -521,9 +537,10 @@
     margin: 0 !important;
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     z-index: 9999;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     overflow: hidden;
+    justify-content: space-between;
 }
 
 /* Hide body scroll when snake game is active */
@@ -564,10 +581,25 @@ body.snake-game-active {
     font-weight: 600;
     transition: all 0.3s ease;
     min-width: 40px;
+    z-index: 10001;
+    position: relative;
 }
 
 .fullscreen-btn:hover {
     background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+    transform: translateY(-2px);
+}
+
+.snake-fullscreen .fullscreen-btn {
+    background: rgba(155, 89, 182, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.snake-fullscreen .fullscreen-btn:hover {
+    background: rgba(142, 68, 173, 0.9);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     transform: translateY(-2px);
 }
 
@@ -615,6 +647,10 @@ body.snake-game-active {
     padding: 10px;
     margin-bottom: 0;
     min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 #snakeCanvas {
@@ -672,9 +708,10 @@ body.snake-game-active {
 .snake-fullscreen .snake-controls {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
-    margin: 10px 20px;
+    margin: 5px 20px 15px;
     padding: 15px;
     backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
 .game-instructions {
@@ -735,8 +772,12 @@ body.snake-game-active {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 2000;
+    z-index: 10002;
     backdrop-filter: blur(5px);
+}
+
+.snake-fullscreen .game-over-modal {
+    z-index: 10003;
 }
 
 .modal-content {
@@ -921,6 +962,7 @@ body.snake-game-active {
     .snake-fullscreen .snake-header {
         padding: 8px 15px;
         margin-bottom: 5px;
+        flex-shrink: 0;
     }
     
     .snake-fullscreen .snake-info h3 {
@@ -928,8 +970,14 @@ body.snake-game-active {
     }
     
     .snake-fullscreen .snake-controls {
-        margin: 5px 15px;
+        margin: 5px 15px 10px;
         padding: 10px;
+        flex-shrink: 0;
+    }
+    
+    .snake-fullscreen .snake-container {
+        padding: 5px;
+        margin-bottom: 5px;
     }
     
     .back-btn, .fullscreen-btn {

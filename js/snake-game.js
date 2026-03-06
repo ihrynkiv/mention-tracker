@@ -50,7 +50,7 @@ function startSnakeGame() {
                         <span>Довжина: <span id="snakeLength">1</span></span>
                     </div>
                 </div>
-                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Повний екран">⛶</button>
+                <button class="fullscreen-btn" onclick="enterFullscreen()" title="Повний екран">⛶</button>
             </div>
             
             <div class="snake-container">
@@ -87,11 +87,11 @@ function startSnakeGame() {
     setupSnakeCanvas();
     setupSnakeControls();
     
-    // Auto-enter fullscreen on mobile
+    // Auto-enter fullscreen on mobile (with delay to ensure DOM is ready)
     if (window.innerWidth <= 768) {
         setTimeout(() => {
             enterFullscreen();
-        }, 500);
+        }, 300);
     }
     
     // Scroll to game area
@@ -221,6 +221,13 @@ function handleTouchEnd(e) {
 
 // Handle keyboard input for desktop
 function handleKeyPress(e) {
+    // Allow ESC to exit fullscreen
+    if (e.key === 'Escape' && snakeGame.isFullscreen) {
+        exitFullscreen();
+        e.preventDefault();
+        return;
+    }
+    
     if (!snakeGame.gameActive) return;
     
     switch(e.key) {
@@ -502,7 +509,7 @@ function enterFullscreen() {
     
     if (container && gameArea) {
         // Store original game area for restoration
-        snakeGame.originalGameArea = gameArea.parentNode;
+        snakeGame.originalGameArea = gameArea;
         
         // Add fullscreen classes
         container.classList.add('snake-fullscreen');
@@ -520,6 +527,13 @@ function enterFullscreen() {
         if (btn) {
             btn.textContent = '✕';
             btn.title = 'Вийти з повного екрану';
+            btn.onclick = exitFullscreen;
+        }
+        
+        // Update back button to exit fullscreen
+        const backBtn = document.querySelector('.back-btn');
+        if (backBtn) {
+            backBtn.onclick = exitFullscreen;
         }
         
         // Lock screen orientation on mobile
@@ -531,6 +545,16 @@ function enterFullscreen() {
 
 // Exit fullscreen mode
 function exitFullscreen() {
+    // Stop game if active
+    if (snakeGame.gameActive) {
+        stopSnakeGameLoop();
+        const btn = document.getElementById('snakeStartBtn');
+        if (btn) {
+            btn.textContent = 'Почати гру';
+            btn.classList.remove('pause');
+        }
+    }
+    
     snakeGame.isFullscreen = false;
     const container = document.getElementById('snakeGameContainer');
     
@@ -551,6 +575,13 @@ function exitFullscreen() {
         if (btn) {
             btn.textContent = '⛶';
             btn.title = 'Повний екран';
+            btn.onclick = enterFullscreen;
+        }
+        
+        // Restore back button functionality
+        const backBtn = document.querySelector('.back-btn');
+        if (backBtn) {
+            backBtn.onclick = closeSnakeGame;
         }
         
         // Unlock screen orientation
@@ -572,7 +603,18 @@ function closeSnakeGame() {
     
     // Exit fullscreen if active
     if (snakeGame.isFullscreen) {
-        exitFullscreen();
+        // Reset fullscreen state without calling exitFullscreen to avoid recursion
+        snakeGame.isFullscreen = false;
+        const container = document.getElementById('snakeGameContainer');
+        if (container) {
+            container.classList.remove('snake-fullscreen');
+            document.body.classList.remove('snake-game-active');
+        }
+        
+        // Unlock screen orientation
+        if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+        }
     }
     
     // Clean up body class
