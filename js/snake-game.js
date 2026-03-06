@@ -735,12 +735,17 @@ function exitFullscreenMobile() {
 
 // Start mobile fullscreen game
 function startMobileFullscreenGame() {
-    // Hide everything and create fullscreen mobile game
+    // HIDE EVERYTHING - main app, minigames, etc.
+    const mainSection = document.getElementById('mainSection');
+    const container = document.querySelector('.container');
+    if (mainSection) mainSection.style.display = 'none';
+    if (container) container.style.display = 'none';
+    
     document.body.style.overflow = 'hidden';
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     
-    // Create fullscreen overlay
+    // Create fullscreen overlay - ONLY the game
     const mobileGame = document.createElement('div');
     mobileGame.id = 'mobileSnakeGame';
     mobileGame.className = 'mobile-snake-fullscreen';
@@ -838,6 +843,12 @@ function exitMobileGame() {
     if (mobileGame) {
         document.body.removeChild(mobileGame);
     }
+    
+    // RESTORE MAIN APP - show everything back
+    const mainSection = document.getElementById('mainSection');
+    const container = document.querySelector('.container');
+    if (mainSection) mainSection.style.display = '';
+    if (container) container.style.display = '';
     
     // Restore body styles
     document.body.style.overflow = '';
