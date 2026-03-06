@@ -527,6 +527,9 @@ function enterFullscreen() {
         // Move to body for true fullscreen
         document.body.appendChild(container);
         
+        // Scroll to top of fullscreen container
+        container.scrollTop = 0;
+        
         // Resize canvas for fullscreen
         resizeCanvas();
         drawGame();
@@ -597,6 +600,12 @@ function exitFullscreen() {
         if (screen.orientation && screen.orientation.unlock) {
             screen.orientation.unlock();
         }
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
     }
 }
 

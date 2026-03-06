@@ -539,18 +539,18 @@
     z-index: 9999;
     display: flex !important;
     flex-direction: column;
-    overflow: hidden;
-    padding: 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
     box-sizing: border-box;
-    gap: 10px;
 }
 
 /* Hide body scroll when snake game is active */
 body.snake-game-active {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 .snake-header {
@@ -566,10 +566,12 @@ body.snake-game-active {
 
 .snake-fullscreen .snake-header {
     background: rgba(255, 255, 255, 0.15);
-    margin-bottom: 10px;
-    border-radius: 0;
-    padding: 10px 20px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 8px;
+    border-radius: 10px;
+    padding: 8px 12px;
+    border-bottom: none;
+    flex-shrink: 0;
+    backdrop-filter: blur(10px);
 }
 
 .fullscreen-btn {
