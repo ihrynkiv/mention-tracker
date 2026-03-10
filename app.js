@@ -1247,6 +1247,13 @@ const PERSONAL_ACHIEVEMENTS = [
         title: 'Дістався Краківської',
         description: 'Допоміг Михайлу знайти шлях до Краківської',
         requirement: { type: 'maze_game', value: 1 }
+    },
+    {
+        id: 'personal_420_wake_up',
+        icon: '⏰',
+        title: 'розбуди мене в 4:20',
+        description: 'Згадати Михайла рівно в 4:20',
+        requirement: { type: 'time_exact', value: '4:20' }
     }
 ];
 
@@ -1379,6 +1386,13 @@ async function checkPersonalAchievements() {
                 isUnlocked = legendCount >= achievement.requirement.value;
             } else if (achievement.requirement.type === 'personal_day_skip') {
                 isUnlocked = await checkPersonalDaySkip();
+            } else if (achievement.requirement.type === 'time_exact') {
+                // Check if current time matches exactly 4:20 (ignore seconds)
+                const now = new Date();
+                const currentHours = now.getHours();
+                const currentMinutes = now.getMinutes();
+                const [targetHour, targetMinute] = achievement.requirement.value.split(':').map(Number);
+                isUnlocked = currentHours === targetHour && currentMinutes === targetMinute;
             }
 
             // If achievement is unlocked and not yet recorded
