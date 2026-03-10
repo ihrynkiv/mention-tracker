@@ -40,10 +40,19 @@ function startSnakeGame() {
 
     gameArea.style.display = 'block';
 
-    // Check if mobile device
-    const isMobile = 'ontouchstart' in window && window.innerWidth <= 768;
+    // Check if mobile device - more reliable detection
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     (window.innerWidth <= 768 && 'ontouchstart' in window);
+    
+    console.log('Device detection:', {
+        userAgent: navigator.userAgent,
+        windowWidth: window.innerWidth,
+        ontouchstart: 'ontouchstart' in window,
+        isMobile: isMobile
+    });
 
     if (isMobile) {
+        console.log('Starting mobile fullscreen game');
         // Mobile version - TRUE fullscreen
         startMobileFullscreenGame();
 
