@@ -23,6 +23,15 @@ let snakeGame = {
     originalParent: null
 };
 
+// High score management
+let snakeHighScores = {
+    maxScore: 0,
+    maxLength: 0,
+    lastSyncTime: 0,
+    syncInterval: 5 * 60 * 1000, // 5 minutes
+    needsSync: false
+};
+
 // Ukrainian food items (matching achievements theme)
 const foodTypes = [
     { type: 'tea', emoji: '☕', name: 'Чай', points: 10 },
@@ -30,13 +39,211 @@ const foodTypes = [
     { type: 'potion', emoji: '🌿', name: 'Зілля-мазілля', points: 25 }
 ];
 
+// High score functions
+function loadSnakeHighScores() {
+    try {
+        const saved = localStorage.getItem('snake_high_scores');
+        if (saved) {
+            const scores = JSON.parse(saved);
+            snakeHighScores.maxScore = scores.maxScore || 0;
+            snakeHighScores.maxLength = scores.maxLength || 0;
+            snakeHighScores.lastSyncTime = scores.lastSyncTime || 0;
+            console.log('Loaded high scores:', snakeHighScores);
+        }
+        
+        // Check if we need to sync from server
+        fetchHighScoresFromServer();
+    } catch (error) {
+        console.error('Error loading high scores:', error);
+    }
+}
+
+function saveSnakeHighScores() {
+    try {
+        const scores = {
+            maxScore: snakeHighScores.maxScore,
+            maxLength: snakeHighScores.maxLength,
+            lastSyncTime: snakeHighScores.lastSyncTime
+        };
+        localStorage.setItem('snake_high_scores', JSON.stringify(scores));
+        console.log('High scores saved to localStorage');
+    } catch (error) {
+        console.error('Error saving high scores:', error);
+    }
+}
+
+function updateHighScore(score, length) {
+    let updated = false;
+    
+    if (score > snakeHighScores.maxScore) {
+        snakeHighScores.maxScore = score;
+        snakeHighScores.needsSync = true;
+        updated = true;
+        console.log('New high score!', score);
+    }
+    
+    if (length > snakeHighScores.maxLength) {
+        snakeHighScores.maxLength = length;
+        snakeHighScores.needsSync = true;
+        updated = true;
+        console.log('New max length!', length);
+    }
+    
+    if (updated) {
+        saveSnakeHighScores();
+        checkSyncSchedule();
+    }
+    
+    return updated;
+}
+
+function checkSyncSchedule() {
+    const now = Date.now();
+    if (snakeHighScores.needsSync && 
+        now - snakeHighScores.lastSyncTime > snakeHighScores.syncInterval) {
+        syncHighScoresToServer();
+    }
+}
+
+async function syncHighScoresToServer() {
+    if (!snakeHighScores.needsSync) return;
+    
+    try {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return;
+        
+        const response = await fetch('/api/snake-high-scores', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: currentUser,
+                maxScore: snakeHighScores.maxScore,
+                maxLength: snakeHighScores.maxLength,
+                timestamp: Date.now()
+            })
+        });
+        
+        if (response.ok) {
+            snakeHighScores.needsSync = false;
+            snakeHighScores.lastSyncTime = Date.now();
+            saveSnakeHighScores();
+            console.log('High scores synced to server');
+        }
+    } catch (error) {
+        console.log('Server sync failed, will retry later:', error);
+    }
+}
+
+async function fetchHighScoresFromServer() {
+    try {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return;
+        
+        const response = await fetch(`/api/snake-high-scores/${currentUser}`);
+        if (response.ok) {
+            const serverScores = await response.json();
+            
+            // Update local scores if server has higher values
+            let updated = false;
+            if (serverScores.maxScore > snakeHighScores.maxScore) {
+                snakeHighScores.maxScore = serverScores.maxScore;
+                updated = true;
+            }
+            if (serverScores.maxLength > snakeHighScores.maxLength) {
+                snakeHighScores.maxLength = serverScores.maxLength;
+                updated = true;
+            }
+            
+            if (updated) {
+                snakeHighScores.lastSyncTime = Date.now();
+                saveSnakeHighScores();
+                console.log('High scores updated from server');
+                updateRecordsDisplay(); // Update UI if records modal is open
+            }
+        }
+    } catch (error) {
+        console.log('Could not fetch from server, using local scores:', error);
+    }
+}
+
+// Periodic sync functionality
+let syncTimer = null;
+
+function startPeriodicSync() {
+    // Clear any existing timer
+    if (syncTimer) {
+        clearInterval(syncTimer);
+    }
+    
+    // Check every 30 seconds if we need to sync
+    syncTimer = setInterval(() => {
+        checkSyncSchedule();
+    }, 30000);
+    
+    console.log('Periodic sync timer started');
+}
+
+function stopPeriodicSync() {
+    if (syncTimer) {
+        clearInterval(syncTimer);
+        syncTimer = null;
+        console.log('Periodic sync timer stopped');
+    }
+}
+
+// Records modal functions
+function showSnakeRecords() {
+    const modal = document.getElementById('recordsModal');
+    if (modal) {
+        updateRecordsDisplay();
+        modal.style.display = 'flex';
+    }
+}
+
+function closeRecordsModal() {
+    const modal = document.getElementById('recordsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function showScoreRecords() {
+    document.getElementById('scoreTabBtn').classList.add('active');
+    document.getElementById('lengthTabBtn').classList.remove('active');
+    // Both are shown in the same view for simplicity
+}
+
+function showLengthRecords() {
+    document.getElementById('lengthTabBtn').classList.add('active');
+    document.getElementById('scoreTabBtn').classList.remove('active');
+    // Both are shown in the same view for simplicity
+}
+
+function updateRecordsDisplay() {
+    const maxScoreDisplay = document.getElementById('maxScoreDisplay');
+    const maxLengthDisplay = document.getElementById('maxLengthDisplay');
+    
+    if (maxScoreDisplay) {
+        maxScoreDisplay.textContent = snakeHighScores.maxScore;
+    }
+    if (maxLengthDisplay) {
+        maxLengthDisplay.textContent = snakeHighScores.maxLength;
+    }
+}
+
 // Start the snake game
 function startSnakeGame() {
     const gameArea = document.getElementById('gameArea');
     if (!gameArea) return;
 
-    // Initialize game
+    // Initialize game and load high scores
     initializeSnakeGame();
+    loadSnakeHighScores();
+    
+    // Start periodic sync timer
+    startPeriodicSync();
 
     gameArea.style.display = 'block';
 
@@ -85,7 +292,10 @@ function startSnakeGame() {
                         <p>⌨️ Використовуйте клавіші ← ↑ ↓ → для руху</p>
                         <p>🎯 Збирайте їжу, не врізайтеся в стіни!</p>
                     </div>
-                    <button class="start-btn" id="snakeStartBtn" onclick="toggleSnakeGame()">Почати гру</button>
+                    <div class="game-buttons">
+                        <button class="start-btn" id="snakeStartBtn" onclick="toggleSnakeGame()">Почати гру</button>
+                        <button class="records-btn" onclick="showSnakeRecords()">Рекорди</button>
+                    </div>
                 </div>
                 
                 <div id="gameOverModal" class="game-over-modal" style="display: none;">
@@ -95,6 +305,29 @@ function startSnakeGame() {
                         <div class="modal-buttons">
                             <button onclick="restartSnakeGame()" class="restart-btn">Грати знову</button>
                             <button onclick="closeSnakeGame()" class="close-btn">Закрити</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="recordsModal" class="game-over-modal" style="display: none;">
+                    <div class="modal-content records-modal-content">
+                        <h3>🏆 Особисті рекорди</h3>
+                        <div class="records-switcher">
+                            <button id="scoreTabBtn" class="switcher-btn active" onclick="showScoreRecords()">Очки</button>
+                            <button id="lengthTabBtn" class="switcher-btn" onclick="showLengthRecords()">Довжина</button>
+                        </div>
+                        <div id="recordsContent" class="records-content">
+                            <div class="record-item">
+                                <span class="record-label">Максимальний рахунок:</span>
+                                <span class="record-value" id="maxScoreDisplay">0</span>
+                            </div>
+                            <div class="record-item">
+                                <span class="record-label">Максимальна довжина:</span>
+                                <span class="record-value" id="maxLengthDisplay">0</span>
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button onclick="closeRecordsModal()" class="close-btn">Закрити</button>
                         </div>
                     </div>
                 </div>
@@ -523,11 +756,20 @@ function gameOver() {
 
     const modal = document.getElementById('gameOverModal');
     const finalScore = document.getElementById('finalScore');
+    
+    // Check for new high scores
+    const isNewHighScore = updateHighScore(snakeGame.score, snakeGame.snake.length);
+    
+    let congratsText = '🎉 Михайло зібрав багато смачнощів!';
+    if (isNewHighScore) {
+        congratsText = '🏆 НОВИЙ РЕКОРД! Михайло встановив особистий рекорд!';
+    }
 
     finalScore.innerHTML = `
         <p>Рахунок: <strong>${snakeGame.score}</strong></p>
         <p>Довжина змійки: <strong>${snakeGame.snake.length}</strong></p>
-        <p>🎉 Михайло зібрав багато смачнощів!</p>
+        <p>${congratsText}</p>
+        ${isNewHighScore ? '<p>🌟 Вітаємо з новим досягненням!</p>' : ''}
     `;
 
     modal.style.display = 'flex';
