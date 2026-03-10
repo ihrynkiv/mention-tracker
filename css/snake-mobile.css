@@ -327,9 +327,8 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Mobile Game Over Modal - Only when visible */
-.mobile-snake-fullscreen .game-over-modal[style*="flex"],
-.mobile-snake-fullscreen .game-over-modal {
+/* Mobile Game Over Modal - Only when explicitly shown */
+.mobile-snake-fullscreen .game-over-modal[style*="flex"] {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
