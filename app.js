@@ -848,7 +848,9 @@ async function updateActivityDisplay() {
 
         // Display activities
         activities.forEach(activity => {
-            const timeString = activity.timestamp.toLocaleTimeString('uk-UA', {
+            // Handle both Date objects and Firestore Timestamp objects
+            const timestamp = activity.timestamp?.toDate ? activity.timestamp.toDate() : new Date(activity.timestamp);
+            const timeString = timestamp.toLocaleTimeString('uk-UA', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
