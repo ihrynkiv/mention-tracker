@@ -809,18 +809,26 @@ function setupMobileCanvas() {
     // Calculate optimal size for mobile
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const headerHeight = 60;
-    const instructionsHeight = 40;
-    const availableHeight = screenHeight - headerHeight - instructionsHeight - 40;
+    const headerHeight = 80;
+    const instructionsHeight = 50;
+    const padding = 40;
+    const availableHeight = screenHeight - headerHeight - instructionsHeight - padding;
     
-    const maxSize = Math.min(screenWidth - 20, availableHeight);
-    const size = Math.floor(maxSize / snakeGame.tileCount) * snakeGame.tileCount;
+    const maxSize = Math.min(screenWidth - 40, availableHeight);
+    const size = Math.max(Math.floor(maxSize / snakeGame.tileCount) * snakeGame.tileCount, 240);
     
     snakeGame.canvas.width = size;
     snakeGame.canvas.height = size;
     snakeGame.gridSize = size / snakeGame.tileCount;
     
+    // Apply responsive styling
+    snakeGame.canvas.style.border = '3px solid rgba(255, 255, 255, 0.4)';
+    snakeGame.canvas.style.borderRadius = '15px';
+    snakeGame.canvas.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.4)';
+    snakeGame.canvas.style.marginBottom = '8px';
+    
     drawGame();
+    updateUI();
 }
 
 // Restart mobile game

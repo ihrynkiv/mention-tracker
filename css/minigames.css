@@ -49,6 +49,16 @@
     box-shadow: none;
 }
 
+.challenge-card.available {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    cursor: pointer;
+}
+
+.challenge-card.available:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(46, 204, 113, 0.4);
+}
+
 .challenge-icon {
     font-size: 48px;
     text-align: center;

@@ -58,12 +58,12 @@ async function setupMinigameTab() {
                 </div>
             </div>
             
-            <div class="challenge-card coming-soon">
+            <div class="challenge-card available" onclick="startSnakeGame()">
                 <div class="challenge-icon">🐍</div>
                 <div class="challenge-info">
                     <h3>Михайло збирає зілля</h3>
                     <p>Допоможи зібрати ☕ чай, 🍫 какао та 🌿 зілля-мазілля</p>
-                    <div class="challenge-status">Незабаром...</div>
+                    <div class="challenge-status">▶️ Грати</div>
                 </div>
             </div>
             

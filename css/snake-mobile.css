@@ -168,6 +168,73 @@
     touch-action: manipulation;
 }
 
+/* Mobile Game Header */
+.mobile-game-header {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 12px 16px;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mobile-exit-btn {
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+}
+
+.mobile-exit-btn:hover,
+.mobile-exit-btn:active {
+    background: rgba(192, 57, 43, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-score {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.mobile-game-area {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    margin: 8px 0;
+}
+
+.mobile-instructions {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 12px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 .mobile-snake-fullscreen .snake-header {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 15px;
@@ -207,12 +274,23 @@
 }
 
 .mobile-snake-fullscreen #snakeCanvas {
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    margin-bottom: 6px;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    margin-bottom: 8px;
     max-width: 100%;
     max-height: 100%;
+    touch-action: none;
+    user-select: none;
+}
+
+.mobile-game-area #snakeCanvas {
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    margin-bottom: 8px;
+    touch-action: none;
+    user-select: none;
 }
 
 .mobile-snake-fullscreen .food-legend {
