@@ -484,6 +484,60 @@ function gameOver() {
     `;
 
     modal.style.display = 'flex';
+    
+    // Add event listeners to modal buttons when modal is shown
+    setTimeout(() => {
+        const restartBtn = modal.querySelector('.restart-btn');
+        const exitBtn = modal.querySelector('.close-btn');
+        
+        if (restartBtn && !restartBtn.hasAttribute('data-listeners-added')) {
+            restartBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Restart button clicked');
+                if (snakeGame.isFullscreen) {
+                    restartMobileGame();
+                } else {
+                    restartSnakeGame();
+                }
+            });
+            restartBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Restart button touched');
+                if (snakeGame.isFullscreen) {
+                    restartMobileGame();
+                } else {
+                    restartSnakeGame();
+                }
+            });
+            restartBtn.setAttribute('data-listeners-added', 'true');
+        }
+        
+        if (exitBtn && !exitBtn.hasAttribute('data-listeners-added')) {
+            exitBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Exit button clicked');
+                if (snakeGame.isFullscreen) {
+                    exitMobileGame();
+                } else {
+                    closeSnakeGame();
+                }
+            });
+            exitBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Exit button touched');
+                if (snakeGame.isFullscreen) {
+                    exitMobileGame();
+                } else {
+                    closeSnakeGame();
+                }
+            });
+            exitBtn.setAttribute('data-listeners-added', 'true');
+        }
+    }, 50);
 }
 
 // Restart game
@@ -788,6 +842,28 @@ function startMobileFullscreenGame() {
     setupMobileCanvas();
     setupSnakeControls();
     
+    // Add event listeners for mobile modal buttons (backup to onclick)
+    setTimeout(() => {
+        const restartBtn = mobileGame.querySelector('.restart-btn');
+        const exitBtn = mobileGame.querySelector('.close-btn');
+        
+        if (restartBtn) {
+            restartBtn.addEventListener('click', restartMobileGame);
+            restartBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                restartMobileGame();
+            });
+        }
+        
+        if (exitBtn) {
+            exitBtn.addEventListener('click', exitMobileGame);
+            exitBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                exitMobileGame();
+            });
+        }
+    }, 100);
+    
     // Lock orientation
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
@@ -833,7 +909,11 @@ function setupMobileCanvas() {
 
 // Restart mobile game
 function restartMobileGame() {
-    document.getElementById('gameOverModal').style.display = 'none';
+    console.log('Restarting mobile game...');
+    const modal = document.getElementById('gameOverModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
     initializeSnakeGame();
     drawGame();
     updateUI();
@@ -844,6 +924,7 @@ function restartMobileGame() {
 
 // Exit mobile game
 function exitMobileGame() {
+    console.log('Exiting mobile game...');
     stopSnakeGameLoop();
     
     // Remove mobile game overlay

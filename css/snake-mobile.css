@@ -328,7 +328,8 @@
 }
 
 /* Mobile Game Over Modal - Only when visible */
-.mobile-snake-fullscreen .game-over-modal[style*="flex"] {
+.mobile-snake-fullscreen .game-over-modal[style*="flex"],
+.mobile-snake-fullscreen .game-over-modal {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -340,6 +341,7 @@
     align-items: center !important;
     z-index: 10002 !important;
     backdrop-filter: blur(10px);
+    pointer-events: auto !important;
 }
 
 .mobile-snake-fullscreen .modal-content {
@@ -352,6 +354,8 @@
     backdrop-filter: blur(15px) !important;
     max-width: 90% !important;
     max-height: 80% !important;
+    pointer-events: auto !important;
+    z-index: 10003 !important;
 }
 
 .mobile-snake-fullscreen .modal-content h3 {
@@ -390,6 +394,9 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
     min-width: 120px !important;
     touch-action: manipulation !important;
+    position: relative !important;
+    z-index: 10003 !important;
+    pointer-events: auto !important;
 }
 
 .mobile-snake-fullscreen .restart-btn {
