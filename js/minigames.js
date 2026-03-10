@@ -58,12 +58,15 @@ async function setupMinigameTab() {
                 </div>
             </div>
             
-            <div class="challenge-card available" onclick="startSnakeGame()">
+            <div class="challenge-card available">
                 <div class="challenge-icon">🐍</div>
                 <div class="challenge-info">
                     <h3>Михайло збирає зілля</h3>
                     <p>Допоможи зібрати ☕ чай, 🍫 какао та 🌿 зілля-мазілля</p>
-                    <div class="challenge-status">▶️ Грати</div>
+                    <div class="challenge-buttons">
+                        <div class="challenge-status" onclick="startSnakeGame()">▶️ Грати</div>
+                        <div class="records-status" onclick="showSnakeLeaderboard()">🏆 Рекорди</div>
+                    </div>
                 </div>
             </div>
             
@@ -111,6 +114,169 @@ function updateChallengeStatus(gameType, status) {
     if (statusElement) {
         statusElement.innerHTML = status;
     }
+}
+
+// Snake game leaderboard
+function showSnakeLeaderboard() {
+    // Create leaderboard modal
+    const existingModal = document.getElementById('snakeLeaderboardModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'snakeLeaderboardModal';
+    modal.className = 'game-over-modal';
+    modal.style.display = 'flex';
+    modal.style.zIndex = '10000';
+    
+    modal.innerHTML = `
+        <div class="modal-content leaderboard-modal-content">
+            <h3>🏆 Рекорди змійки</h3>
+            <div class="leaderboard-switcher">
+                <button id="scoreLeaderboardBtn" class="switcher-btn active" onclick="showScoreLeaderboard()">Очки</button>
+                <button id="lengthLeaderboardBtn" class="switcher-btn" onclick="showLengthLeaderboard()">Довжина</button>
+            </div>
+            <div id="leaderboardContent" class="leaderboard-content">
+                <div class="loading">Завантаження...</div>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="closeSnakeLeaderboard()" class="close-btn">Закрити</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Load score leaderboard by default
+    loadScoreLeaderboard();
+}
+
+function closeSnakeLeaderboard() {
+    const modal = document.getElementById('snakeLeaderboardModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function showScoreLeaderboard() {
+    document.getElementById('scoreLeaderboardBtn').classList.add('active');
+    document.getElementById('lengthLeaderboardBtn').classList.remove('active');
+    loadScoreLeaderboard();
+}
+
+function showLengthLeaderboard() {
+    document.getElementById('lengthLeaderboardBtn').classList.add('active');
+    document.getElementById('scoreLeaderboardBtn').classList.remove('active');
+    loadLengthLeaderboard();
+}
+
+async function loadScoreLeaderboard() {
+    const content = document.getElementById('leaderboardContent');
+    if (!content) return;
+    
+    content.innerHTML = '<div class="loading">Завантаження рекордів...</div>';
+    
+    try {
+        const response = await fetch('/api/snake-leaderboard/score');
+        if (response.ok) {
+            const leaderboard = await response.json();
+            displayLeaderboard(leaderboard, 'score');
+        } else {
+            throw new Error('Failed to fetch leaderboard');
+        }
+    } catch (error) {
+        console.log('Could not load leaderboard from server:', error);
+        content.innerHTML = `
+            <div class="error-message">
+                <p>Не вдалося завантажити рекорди з сервера</p>
+                <p>Спробуйте пізніше</p>
+            </div>
+        `;
+    }
+}
+
+async function loadLengthLeaderboard() {
+    const content = document.getElementById('leaderboardContent');
+    if (!content) return;
+    
+    content.innerHTML = '<div class="loading">Завантаження рекордів...</div>';
+    
+    try {
+        const response = await fetch('/api/snake-leaderboard/length');
+        if (response.ok) {
+            const leaderboard = await response.json();
+            displayLeaderboard(leaderboard, 'length');
+        } else {
+            throw new Error('Failed to fetch leaderboard');
+        }
+    } catch (error) {
+        console.log('Could not load leaderboard from server:', error);
+        content.innerHTML = `
+            <div class="error-message">
+                <p>Не вдалося завантажити рекорди з сервера</p>
+                <p>Спробуйте пізніше</p>
+            </div>
+        `;
+    }
+}
+
+function displayLeaderboard(leaderboard, type) {
+    const content = document.getElementById('leaderboardContent');
+    if (!content || !leaderboard || leaderboard.length === 0) {
+        content.innerHTML = `
+            <div class="no-records">
+                <p>Поки що немає рекордів</p>
+                <p>Станьте першим! 🎮</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const currentUser = getCurrentUser();
+    let html = '<div class="leaderboard-list">';
+    
+    leaderboard.forEach((record, index) => {
+        const rank = index + 1;
+        const isCurrentUser = record.username === currentUser;
+        const value = type === 'score' ? record.maxScore : record.maxLength;
+        const label = type === 'score' ? 'очок' : 'сегментів';
+        
+        let rankIcon = `${rank}`;
+        if (rank === 1) rankIcon = '🥇';
+        else if (rank === 2) rankIcon = '🥈';
+        else if (rank === 3) rankIcon = '🥉';
+        
+        html += `
+            <div class="leaderboard-entry ${rank <= 3 ? 'top-three' : ''} ${isCurrentUser ? 'current-user' : ''}">
+                <div class="rank">${rankIcon}</div>
+                <div class="player-info">
+                    <div class="player-name">${record.username}${isCurrentUser ? ' (ви)' : ''}</div>
+                    <div class="player-score">${value} ${label}</div>
+                </div>
+                ${record.achievedAt ? `<div class="achievement-date">${formatDate(record.achievedAt)}</div>` : ''}
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    content.innerHTML = html;
+}
+
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Сьогодні';
+    if (diffDays === 1) return 'Вчора';
+    if (diffDays < 7) return `${diffDays} днів тому`;
+    
+    return date.toLocaleDateString('uk-UA', {
+        day: 'numeric',
+        month: 'short'
+    });
 }
 
 // Initialize when DOM is ready
