@@ -103,12 +103,24 @@ function startSnakeGame() {
 
 // Initialize game state
 function initializeSnakeGame() {
-    snakeGame.snake = [{ x: 10, y: 10 }];
+    console.log('Initializing snake game...');
+    // Stop any existing game loop
+    if (snakeGame.gameLoop) {
+        clearInterval(snakeGame.gameLoop);
+        snakeGame.gameLoop = null;
+    }
+    
+    // Reset all game state
+    snakeGame.snake = [{ x: 7, y: 7 }];  // Start closer to center
     snakeGame.direction = { x: 0, y: 0 };
     snakeGame.lastDirection = { x: 0, y: 0 };
     snakeGame.score = 0;
     snakeGame.gameActive = false;
+    snakeGame.justAte = false;
+    snakeGame.gameSpeed = 150;
+    
     generateFood();
+    console.log('Game initialized. Snake at:', snakeGame.snake[0], 'TileCount:', snakeGame.tileCount);
 }
 
 // Setup canvas
@@ -293,8 +305,14 @@ function toggleSnakeGame() {
 
 // Start game loop
 function startSnakeGameLoop() {
+    console.log('Starting snake game loop...');
+    console.log('Current snake position:', snakeGame.snake[0]);
+    console.log('Current direction:', snakeGame.direction);
+    console.log('TileCount:', snakeGame.tileCount);
+    
     snakeGame.gameActive = true;
     snakeGame.gameLoop = setInterval(updateGame, snakeGame.gameSpeed);
+    console.log('Game loop started with interval ID:', snakeGame.gameLoop);
 }
 
 // Stop game loop
@@ -307,10 +325,16 @@ function stopSnakeGameLoop() {
 
 // Update game state
 function updateGame() {
+    if (!snakeGame.gameActive) {
+        console.log('Game not active, stopping update');
+        return;
+    }
+
     moveSnake();
 
     // Check collisions
     if (checkCollision()) {
+        console.log('Collision detected, ending game');
         gameOver();
         return;
     }
@@ -358,12 +382,14 @@ function checkCollision() {
     // Wall collision
     if (head.x < 0 || head.x >= snakeGame.tileCount ||
         head.y < 0 || head.y >= snakeGame.tileCount) {
+        console.log('Wall collision detected. Head:', head, 'TileCount:', snakeGame.tileCount);
         return true;
     }
 
     // Self collision
     for (let i = 1; i < snakeGame.snake.length; i++) {
         if (head.x === snakeGame.snake[i].x && head.y === snakeGame.snake[i].y) {
+            console.log('Self collision detected. Head:', head, 'Body segment:', snakeGame.snake[i]);
             return true;
         }
     }
@@ -484,60 +510,7 @@ function gameOver() {
     `;
 
     modal.style.display = 'flex';
-    
-    // Add event listeners to modal buttons when modal is shown
-    setTimeout(() => {
-        const restartBtn = modal.querySelector('.restart-btn');
-        const exitBtn = modal.querySelector('.close-btn');
-        
-        if (restartBtn && !restartBtn.hasAttribute('data-listeners-added')) {
-            restartBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Restart button clicked');
-                if (snakeGame.isFullscreen) {
-                    restartMobileGame();
-                } else {
-                    restartSnakeGame();
-                }
-            });
-            restartBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Restart button touched');
-                if (snakeGame.isFullscreen) {
-                    restartMobileGame();
-                } else {
-                    restartSnakeGame();
-                }
-            });
-            restartBtn.setAttribute('data-listeners-added', 'true');
-        }
-        
-        if (exitBtn && !exitBtn.hasAttribute('data-listeners-added')) {
-            exitBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Exit button clicked');
-                if (snakeGame.isFullscreen) {
-                    exitMobileGame();
-                } else {
-                    closeSnakeGame();
-                }
-            });
-            exitBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Exit button touched');
-                if (snakeGame.isFullscreen) {
-                    exitMobileGame();
-                } else {
-                    closeSnakeGame();
-                }
-            });
-            exitBtn.setAttribute('data-listeners-added', 'true');
-        }
-    }, 50);
+    console.log('Game over modal displayed');
 }
 
 // Restart game
@@ -828,8 +801,8 @@ function startMobileFullscreenGame() {
                 <h3>🎮 Гру закінчено!</h3>
                 <div id="finalScore"></div>
                 <div class="modal-buttons">
-                    <button onclick="restartMobileGame()" class="restart-btn">Грати знову</button>
-                    <button onclick="exitMobileGame()" class="close-btn">Вийти</button>
+                    <button id="mobileRestartBtn" class="restart-btn">Грати знову</button>
+                    <button id="mobileExitBtn" class="close-btn">Вийти</button>
                 </div>
             </div>
         </div>
@@ -842,27 +815,37 @@ function startMobileFullscreenGame() {
     setupMobileCanvas();
     setupSnakeControls();
     
-    // Add event listeners for mobile modal buttons (backup to onclick)
+    // Add event listeners for mobile modal buttons
     setTimeout(() => {
-        const restartBtn = mobileGame.querySelector('.restart-btn');
-        const exitBtn = mobileGame.querySelector('.close-btn');
+        const restartBtn = document.getElementById('mobileRestartBtn');
+        const exitBtn = document.getElementById('mobileExitBtn');
         
         if (restartBtn) {
-            restartBtn.addEventListener('click', restartMobileGame);
-            restartBtn.addEventListener('touchend', (e) => {
+            restartBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('Mobile restart clicked');
+                restartMobileGame();
+            });
+            restartBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                console.log('Mobile restart touched');
                 restartMobileGame();
             });
         }
         
         if (exitBtn) {
-            exitBtn.addEventListener('click', exitMobileGame);
-            exitBtn.addEventListener('touchend', (e) => {
+            exitBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('Mobile exit clicked');
+                exitMobileGame();
+            });
+            exitBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                console.log('Mobile exit touched');
                 exitMobileGame();
             });
         }
-    }, 100);
+    }, 200);
     
     // Lock orientation
     if (screen.orientation && screen.orientation.lock) {
