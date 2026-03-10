@@ -492,8 +492,20 @@ function drawGame() {
 
 // Update UI elements
 function updateUI() {
-    document.getElementById('snakeScore').textContent = snakeGame.score;
-    document.getElementById('snakeLength').textContent = snakeGame.snake.length;
+    const scoreElement = document.getElementById('snakeScore');
+    const lengthElement = document.getElementById('snakeLength');
+    
+    if (scoreElement) {
+        scoreElement.textContent = snakeGame.score;
+    } else {
+        console.warn('snakeScore element not found');
+    }
+    
+    if (lengthElement) {
+        lengthElement.textContent = snakeGame.snake.length;
+    } else {
+        console.warn('snakeLength element not found');
+    }
 }
 
 // Game over
@@ -779,7 +791,7 @@ function startMobileFullscreenGame() {
     
     mobileGame.innerHTML = `
         <div class="mobile-game-header">
-            <button class="mobile-exit-btn" onclick="exitMobileGame()">✕</button>
+            <button class="mobile-exit-btn" id="mobileHeaderExitBtn">✕</button>
             <div class="mobile-score">Рахунок: <span id="snakeScore">0</span> | Довжина: <span id="snakeLength">1</span></div>
         </div>
         
@@ -815,10 +827,11 @@ function startMobileFullscreenGame() {
     setupMobileCanvas();
     setupSnakeControls();
     
-    // Add event listeners for mobile modal buttons
+    // Add event listeners for mobile buttons
     setTimeout(() => {
         const restartBtn = document.getElementById('mobileRestartBtn');
         const exitBtn = document.getElementById('mobileExitBtn');
+        const headerExitBtn = document.getElementById('mobileHeaderExitBtn');
         
         if (restartBtn) {
             restartBtn.addEventListener('click', (e) => {
@@ -845,6 +858,19 @@ function startMobileFullscreenGame() {
                 exitMobileGame();
             });
         }
+        
+        if (headerExitBtn) {
+            headerExitBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Mobile header exit clicked');
+                exitMobileGame();
+            });
+            headerExitBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                console.log('Mobile header exit touched');
+                exitMobileGame();
+            });
+        }
     }, 200);
     
     // Lock orientation
@@ -852,10 +878,10 @@ function startMobileFullscreenGame() {
         screen.orientation.lock('portrait').catch(() => {});
     }
     
-    // Start countdown
+    // Start countdown (with additional delay to ensure DOM is ready)
     setTimeout(() => {
         startCountdown();
-    }, 500);
+    }, 750);
 }
 
 // Setup mobile canvas
