@@ -442,8 +442,7 @@ function handleTouchStart(e) {
 // Handle touch end (swipe detection)
 function handleTouchEnd(e) {
     e.preventDefault();
-    if (!snakeGame.gameActive) return;
-
+    
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - snakeGame.touchStartX;
     const deltaY = touch.clientY - snakeGame.touchStartY;
@@ -457,23 +456,34 @@ function handleTouchEnd(e) {
     }
 
     // Determine swipe direction
+    let newDirection = null;
     if (absDeltaX > absDeltaY) {
         // Horizontal swipe
         if (deltaX > 0 && snakeGame.lastDirection.x !== -1) {
             // Swipe right
-            snakeGame.direction = { x: 1, y: 0 };
+            newDirection = { x: 1, y: 0 };
         } else if (deltaX < 0 && snakeGame.lastDirection.x !== 1) {
             // Swipe left
-            snakeGame.direction = { x: -1, y: 0 };
+            newDirection = { x: -1, y: 0 };
         }
     } else {
         // Vertical swipe
         if (deltaY > 0 && snakeGame.lastDirection.y !== -1) {
             // Swipe down
-            snakeGame.direction = { x: 0, y: 1 };
+            newDirection = { x: 0, y: 1 };
         } else if (deltaY < 0 && snakeGame.lastDirection.y !== 1) {
             // Swipe up
-            snakeGame.direction = { x: 0, y: -1 };
+            newDirection = { x: 0, y: -1 };
+        }
+    }
+    
+    // If valid direction detected
+    if (newDirection) {
+        snakeGame.direction = newDirection;
+        
+        // Start game if not active (first swipe)
+        if (!snakeGame.gameActive) {
+            startSnakeGameLoop();
         }
     }
 }
@@ -487,33 +497,43 @@ function handleKeyPress(e) {
         return;
     }
 
-    if (!snakeGame.gameActive) return;
-
+    let newDirection = null;
+    
     switch(e.key) {
         case 'ArrowUp':
             if (snakeGame.lastDirection.y !== 1) {
-                snakeGame.direction = { x: 0, y: -1 };
+                newDirection = { x: 0, y: -1 };
             }
             e.preventDefault();
             break;
         case 'ArrowDown':
             if (snakeGame.lastDirection.y !== -1) {
-                snakeGame.direction = { x: 0, y: 1 };
+                newDirection = { x: 0, y: 1 };
             }
             e.preventDefault();
             break;
         case 'ArrowLeft':
             if (snakeGame.lastDirection.x !== 1) {
-                snakeGame.direction = { x: -1, y: 0 };
+                newDirection = { x: -1, y: 0 };
             }
             e.preventDefault();
             break;
         case 'ArrowRight':
             if (snakeGame.lastDirection.x !== -1) {
-                snakeGame.direction = { x: 1, y: 0 };
+                newDirection = { x: 1, y: 0 };
             }
             e.preventDefault();
             break;
+    }
+    
+    // If valid direction detected
+    if (newDirection) {
+        snakeGame.direction = newDirection;
+        
+        // Start game if not active (first arrow key press)
+        if (!snakeGame.gameActive) {
+            startSnakeGameLoop();
+        }
     }
 }
 
@@ -965,10 +985,7 @@ function restartSnakeGameMobile() {
     drawGame();
     updateUI();
 
-    // Start countdown again
-    setTimeout(() => {
-        startCountdown();
-    }, 500);
+    // Game is ready for restart - no countdown needed
 }
 
 // Close snake game
@@ -1058,13 +1075,6 @@ function startMobileFullscreenGame() {
         
         <div class="mobile-instructions">📱 Проведіть пальцем для руху змійки</div>
         
-        <div id="countdownOverlay" class="countdown-overlay">
-            <div class="countdown-content">
-                <div class="countdown-number" id="countdownNumber">3</div>
-                <div class="countdown-text">Підготуватися...</div>
-            </div>
-        </div>
-        
         <div id="gameOverModal" class="game-over-modal" style="display: none;">
             <div class="modal-content">
                 <h3>🎮 Гру закінчено!</h3>
@@ -1135,10 +1145,7 @@ function startMobileFullscreenGame() {
         screen.orientation.lock('portrait').catch(() => {});
     }
     
-    // Start countdown (with additional delay to ensure DOM is ready)
-    setTimeout(() => {
-        startCountdown();
-    }, 750);
+    // Game is ready - no countdown needed, waits for first move
 }
 
 // Setup mobile canvas
@@ -1183,9 +1190,7 @@ function restartMobileGame() {
     initializeSnakeGame();
     drawGame();
     updateUI();
-    setTimeout(() => {
-        startCountdown();
-    }, 500);
+    // Game is ready for restart - no countdown needed
 }
 
 // Exit mobile game
