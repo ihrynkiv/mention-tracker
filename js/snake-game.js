@@ -14,7 +14,7 @@ let snakeGame = {
     direction: { x: 0, y: 0 },
     score: 0,
     gameActive: false,
-    gameSpeed: 150,
+    gameSpeed: 195,
     lastDirection: { x: 0, y: 0 },
     touchStartX: 0,
     touchStartY: 0,
@@ -359,7 +359,7 @@ function initializeSnakeGame() {
     snakeGame.score = 0;
     snakeGame.gameActive = false;
     snakeGame.justAte = false;
-    snakeGame.gameSpeed = 150;
+    snakeGame.gameSpeed = 195;
     
     generateFood();
     console.log('Game initialized. Snake at:', snakeGame.snake[0], 'TileCount:', snakeGame.tileCount);
@@ -607,6 +607,19 @@ function moveSnake() {
     head.x += snakeGame.direction.x;
     head.y += snakeGame.direction.y;
 
+    // Wrap around boundaries
+    if (head.x < 0) {
+        head.x = snakeGame.tileCount - 1;
+    } else if (head.x >= snakeGame.tileCount) {
+        head.x = 0;
+    }
+    
+    if (head.y < 0) {
+        head.y = snakeGame.tileCount - 1;
+    } else if (head.y >= snakeGame.tileCount) {
+        head.y = 0;
+    }
+
     snakeGame.snake.unshift(head);
     snakeGame.lastDirection = { ...snakeGame.direction };
 
@@ -621,14 +634,7 @@ function moveSnake() {
 function checkCollision() {
     const head = snakeGame.snake[0];
 
-    // Wall collision
-    if (head.x < 0 || head.x >= snakeGame.tileCount ||
-        head.y < 0 || head.y >= snakeGame.tileCount) {
-        console.log('Wall collision detected. Head:', head, 'TileCount:', snakeGame.tileCount);
-        return true;
-    }
-
-    // Self collision
+    // Only check self collision (wall collision removed - now wraps around)
     for (let i = 1; i < snakeGame.snake.length; i++) {
         if (head.x === snakeGame.snake[i].x && head.y === snakeGame.snake[i].y) {
             console.log('Self collision detected. Head:', head, 'Body segment:', snakeGame.snake[i]);
@@ -651,8 +657,8 @@ function eatFood() {
     generateFood();
 
     // Increase speed slightly
-    if (snakeGame.gameSpeed > 80) {
-        snakeGame.gameSpeed -= 2;
+    if (snakeGame.gameSpeed > 104) {
+        snakeGame.gameSpeed -= 3;
         stopSnakeGameLoop();
         startSnakeGameLoop();
     }
