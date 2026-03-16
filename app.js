@@ -17,6 +17,11 @@ const auth = firebase.auth();
 // Global variables
 let currentUser = null;
 
+// Helper function to get current user
+function getCurrentUser() {
+    return currentUser;
+}
+
 // Activity cache for reducing Firebase reads
 let activityCache = new Map();
 let lastCacheUpdate = null;
