@@ -178,18 +178,13 @@ async function loadScoreLeaderboard() {
     content.innerHTML = '<div class="loading">Завантаження рекордів...</div>';
     
     try {
-        const response = await fetch('/api/snake-leaderboard/score');
-        if (response.ok) {
-            const leaderboard = await response.json();
-            displayLeaderboard(leaderboard, 'score');
-        } else {
-            throw new Error('Failed to fetch leaderboard');
-        }
+        const leaderboard = await getSnakeLeaderboard('score');
+        displayLeaderboard(leaderboard, 'score');
     } catch (error) {
-        console.log('Could not load leaderboard from server:', error);
+        console.log('Could not load leaderboard from Firebase:', error);
         content.innerHTML = `
             <div class="error-message">
-                <p>Не вдалося завантажити рекорди з сервера</p>
+                <p>Не вдалося завантажити рекорди</p>
                 <p>Спробуйте пізніше</p>
             </div>
         `;
@@ -203,18 +198,13 @@ async function loadLengthLeaderboard() {
     content.innerHTML = '<div class="loading">Завантаження рекордів...</div>';
     
     try {
-        const response = await fetch('/api/snake-leaderboard/length');
-        if (response.ok) {
-            const leaderboard = await response.json();
-            displayLeaderboard(leaderboard, 'length');
-        } else {
-            throw new Error('Failed to fetch leaderboard');
-        }
+        const leaderboard = await getSnakeLeaderboard('length');
+        displayLeaderboard(leaderboard, 'length');
     } catch (error) {
-        console.log('Could not load leaderboard from server:', error);
+        console.log('Could not load leaderboard from Firebase:', error);
         content.innerHTML = `
             <div class="error-message">
-                <p>Не вдалося завантажити рекорди з сервера</p>
+                <p>Не вдалося завантажити рекорди</p>
                 <p>Спробуйте пізніше</p>
             </div>
         `;
@@ -277,6 +267,79 @@ function formatDate(timestamp) {
         day: 'numeric',
         month: 'short'
     });
+}
+
+// Firebase functions for snake leaderboard
+async function getSnakeLeaderboard(type = 'score') {
+    try {
+        const orderByField = type === 'score' ? 'maxScore' : 'maxLength';
+        const snapshot = await firebase.firestore()
+            .collection('snakeHighScores')
+            .orderBy(orderByField, 'desc')
+            .limit(10)
+            .get();
+            
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                username: data.username,
+                maxScore: data.maxScore || 0,
+                maxLength: data.maxLength || 0,
+                achievedAt: data.lastUpdated || data.timestamp
+            };
+        });
+    } catch (error) {
+        console.error('Error fetching snake leaderboard:', error);
+        throw error;
+    }
+}
+
+async function saveSnakeHighScoresToFirebase(username, maxScore, maxLength) {
+    try {
+        const docRef = firebase.firestore()
+            .collection('snakeHighScores')
+            .doc(username);
+            
+        const doc = await docRef.get();
+        const now = Date.now();
+        
+        if (doc.exists) {
+            const currentData = doc.data();
+            const updateData = {
+                lastUpdated: now
+            };
+            
+            // Only update if new scores are higher
+            if (maxScore > (currentData.maxScore || 0)) {
+                updateData.maxScore = maxScore;
+            }
+            if (maxLength > (currentData.maxLength || 0)) {
+                updateData.maxLength = maxLength;
+            }
+            
+            // Only update if there are actual changes
+            if (updateData.maxScore !== undefined || updateData.maxLength !== undefined) {
+                await docRef.update(updateData);
+                console.log('Snake high scores updated in Firebase');
+                return true;
+            }
+        } else {
+            // Create new document
+            await docRef.set({
+                username: username,
+                maxScore: maxScore,
+                maxLength: maxLength,
+                timestamp: now,
+                lastUpdated: now
+            });
+            console.log('Snake high scores created in Firebase');
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error saving snake high scores to Firebase:', error);
+        throw error;
+    }
 }
 
 // Initialize when DOM is ready

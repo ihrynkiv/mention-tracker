@@ -51,8 +51,8 @@ function loadSnakeHighScores() {
             console.log('Loaded high scores:', snakeHighScores);
         }
         
-        // Check if we need to sync from server
-        fetchHighScoresFromServer();
+        // Check if we need to sync from Firebase
+        fetchHighScoresFromFirebase();
     } catch (error) {
         console.error('Error loading high scores:', error);
     }
@@ -101,70 +101,68 @@ function checkSyncSchedule() {
     const now = Date.now();
     if (snakeHighScores.needsSync && 
         now - snakeHighScores.lastSyncTime > snakeHighScores.syncInterval) {
-        syncHighScoresToServer();
+        syncHighScoresToFirebase();
     }
 }
 
-async function syncHighScoresToServer() {
+async function syncHighScoresToFirebase() {
     if (!snakeHighScores.needsSync) return;
     
     try {
         const currentUser = getCurrentUser();
         if (!currentUser) return;
         
-        const response = await fetch('/api/snake-high-scores', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: currentUser,
-                maxScore: snakeHighScores.maxScore,
-                maxLength: snakeHighScores.maxLength,
-                timestamp: Date.now()
-            })
-        });
+        const success = await saveSnakeHighScoresToFirebase(
+            currentUser,
+            snakeHighScores.maxScore,
+            snakeHighScores.maxLength
+        );
         
-        if (response.ok) {
+        if (success) {
             snakeHighScores.needsSync = false;
             snakeHighScores.lastSyncTime = Date.now();
             saveSnakeHighScores();
-            console.log('High scores synced to server');
+            console.log('High scores synced to Firebase');
         }
     } catch (error) {
-        console.log('Server sync failed, will retry later:', error);
+        console.log('Firebase sync failed, will retry later:', error);
     }
 }
 
-async function fetchHighScoresFromServer() {
+async function fetchHighScoresFromFirebase() {
     try {
         const currentUser = getCurrentUser();
         if (!currentUser) return;
         
-        const response = await fetch(`/api/snake-high-scores/${currentUser}`);
-        if (response.ok) {
-            const serverScores = await response.json();
+        const docRef = firebase.firestore()
+            .collection('snakeHighScores')
+            .doc(currentUser);
             
-            // Update local scores if server has higher values
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            const firebaseScores = doc.data();
+            
+            // Update local scores if Firebase has higher values
             let updated = false;
-            if (serverScores.maxScore > snakeHighScores.maxScore) {
-                snakeHighScores.maxScore = serverScores.maxScore;
+            if ((firebaseScores.maxScore || 0) > snakeHighScores.maxScore) {
+                snakeHighScores.maxScore = firebaseScores.maxScore || 0;
                 updated = true;
             }
-            if (serverScores.maxLength > snakeHighScores.maxLength) {
-                snakeHighScores.maxLength = serverScores.maxLength;
+            if ((firebaseScores.maxLength || 0) > snakeHighScores.maxLength) {
+                snakeHighScores.maxLength = firebaseScores.maxLength || 0;
                 updated = true;
             }
             
             if (updated) {
                 snakeHighScores.lastSyncTime = Date.now();
                 saveSnakeHighScores();
-                console.log('High scores updated from server');
+                console.log('High scores updated from Firebase');
                 updateRecordsDisplay(); // Update UI if records modal is open
             }
         }
     } catch (error) {
-        console.log('Could not fetch from server, using local scores:', error);
+        console.log('Could not fetch from Firebase, using local scores:', error);
     }
 }
 
