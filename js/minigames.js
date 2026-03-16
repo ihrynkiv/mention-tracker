@@ -212,8 +212,24 @@ async function loadLengthLeaderboard() {
 }
 
 function displayLeaderboard(leaderboard, type) {
+    console.log('displayLeaderboard called with:', { leaderboard, type });
     const content = document.getElementById('leaderboardContent');
+    console.log('leaderboardContent element:', content);
+    
+    if (!content) {
+        console.error('leaderboardContent element not found');
+        return;
+    }
+    
+    if (!leaderboard) {
+        console.log('leaderboard is null/undefined');
+    } else {
+        console.log('leaderboard length:', leaderboard.length);
+        console.log('leaderboard data:', leaderboard);
+    }
+    
     if (!content || !leaderboard || leaderboard.length === 0) {
+        console.log('Showing no records message');
         content.innerHTML = `
             <div class="no-records">
                 <p>Поки що немає рекордів</p>
@@ -272,15 +288,21 @@ function formatDate(timestamp) {
 // Firebase functions for snake leaderboard
 async function getSnakeLeaderboard(type = 'score') {
     try {
+        console.log('Fetching snake leaderboard for type:', type);
         const orderByField = type === 'score' ? 'maxScore' : 'maxLength';
+        
         const snapshot = await firebase.firestore()
             .collection('snakeHighScores')
             .orderBy(orderByField, 'desc')
             .limit(10)
             .get();
             
-        return snapshot.docs.map(doc => {
+        console.log('Firebase snapshot size:', snapshot.size);
+        console.log('Firebase snapshot docs:', snapshot.docs);
+        
+        const leaderboardData = snapshot.docs.map(doc => {
             const data = doc.data();
+            console.log('Document data:', doc.id, data);
             return {
                 username: data.username,
                 maxScore: data.maxScore || 0,
@@ -288,6 +310,9 @@ async function getSnakeLeaderboard(type = 'score') {
                 achievedAt: data.lastUpdated || data.timestamp
             };
         });
+        
+        console.log('Processed leaderboard data:', leaderboardData);
+        return leaderboardData;
     } catch (error) {
         console.error('Error fetching snake leaderboard:', error);
         throw error;
@@ -341,6 +366,35 @@ async function saveSnakeHighScoresToFirebase(username, maxScore, maxLength) {
         throw error;
     }
 }
+
+// Debug function to create test data
+async function createTestSnakeData() {
+    try {
+        console.log('Creating test snake data...');
+        await firebase.firestore().collection('snakeHighScores').doc('testuser1').set({
+            username: 'testuser1',
+            maxScore: 150,
+            maxLength: 8,
+            timestamp: Date.now(),
+            lastUpdated: Date.now()
+        });
+        
+        await firebase.firestore().collection('snakeHighScores').doc('testuser2').set({
+            username: 'testuser2',
+            maxScore: 120,
+            maxLength: 6,
+            timestamp: Date.now(),
+            lastUpdated: Date.now()
+        });
+        
+        console.log('Test data created successfully');
+    } catch (error) {
+        console.error('Error creating test data:', error);
+    }
+}
+
+// Create test data once to initialize collection
+createTestSnakeData();
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
