@@ -91,16 +91,21 @@ function updateHighScore(score, length) {
     
     if (updated) {
         saveSnakeHighScores();
-        checkSyncSchedule();
+        // Immediately sync high scores to Firebase when updated
+        console.log('New high score detected - syncing immediately to Firebase');
+        syncHighScoresToFirebase();
     }
     
     return updated;
 }
 
 function checkSyncSchedule() {
+    // This function is now only used as a backup sync mechanism
+    // High scores are synced immediately when updated
     const now = Date.now();
     if (snakeHighScores.needsSync && 
         now - snakeHighScores.lastSyncTime > snakeHighScores.syncInterval) {
+        console.log('Running backup sync for unsaved high scores');
         syncHighScoresToFirebase();
     }
 }
