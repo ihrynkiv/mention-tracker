@@ -106,11 +106,24 @@ function checkSyncSchedule() {
 }
 
 async function syncHighScoresToFirebase() {
-    if (!snakeHighScores.needsSync) return;
+    if (!snakeHighScores.needsSync) {
+        console.log('No sync needed');
+        return;
+    }
     
     try {
         const currentUser = getCurrentUser();
-        if (!currentUser) return;
+        console.log('Current user for snake sync:', currentUser);
+        if (!currentUser) {
+            console.log('No current user - cannot sync high scores');
+            return;
+        }
+        
+        console.log('Syncing high scores to Firebase:', {
+            user: currentUser,
+            maxScore: snakeHighScores.maxScore,
+            maxLength: snakeHighScores.maxLength
+        });
         
         const success = await saveSnakeHighScoresToFirebase(
             currentUser,
@@ -122,7 +135,9 @@ async function syncHighScoresToFirebase() {
             snakeHighScores.needsSync = false;
             snakeHighScores.lastSyncTime = Date.now();
             saveSnakeHighScores();
-            console.log('High scores synced to Firebase');
+            console.log('High scores synced to Firebase successfully');
+        } else {
+            console.log('High scores sync returned false - no update needed');
         }
     } catch (error) {
         console.log('Firebase sync failed, will retry later:', error);
