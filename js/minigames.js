@@ -393,8 +393,23 @@ async function createTestSnakeData() {
     }
 }
 
-// Create test data once to initialize collection
-createTestSnakeData();
+// Debug function to clean up test data
+async function cleanupTestSnakeData() {
+    try {
+        console.log('Cleaning up test snake data...');
+        await firebase.firestore().collection('snakeHighScores').doc('testuser1').delete();
+        await firebase.firestore().collection('snakeHighScores').doc('testuser2').delete();
+        console.log('Test data cleaned up successfully');
+    } catch (error) {
+        console.error('Error cleaning up test data:', error);
+    }
+}
+
+// Run cleanup once to remove test data (comment out after running)
+// cleanupTestSnakeData();
+
+// Uncomment to create test data once
+// createTestSnakeData();
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
