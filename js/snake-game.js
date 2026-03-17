@@ -141,6 +141,14 @@ async function syncHighScoresToFirebase() {
             snakeHighScores.lastSyncTime = Date.now();
             saveSnakeHighScores();
             console.log('High scores synced to Firebase successfully');
+            
+            // Check for achievements after syncing high scores
+            if (typeof checkAchievements === 'function') {
+                checkAchievements();
+            }
+            if (typeof checkPersonalAchievements === 'function') {
+                checkPersonalAchievements();
+            }
         } else {
             console.log('High scores sync returned false - no update needed');
         }

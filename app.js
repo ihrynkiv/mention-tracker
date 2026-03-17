@@ -1179,6 +1179,13 @@ const GLOBAL_ACHIEVEMENTS = [
         title: 'Його ніхто не згадав',
         description: 'Протягом дня ніхто не згадав Михайла (краще не відкривати)',
         requirement: { type: 'day_gap', value: 1 }
+    },
+    {
+        id: 'snake_hunters',
+        icon: '🐍',
+        title: 'Змієлови',
+        description: '5 різних користувачів зіграли у змійку',
+        requirement: { type: 'snake_players', value: 5 }
     }
 ];
 
@@ -1261,6 +1268,13 @@ const PERSONAL_ACHIEVEMENTS = [
         title: 'розбуди мене в 4:20',
         description: 'Згадати Михайла рівно в 4:20',
         requirement: { type: 'time_exact', value: '4:20' }
+    },
+    {
+        id: 'snake_conqueror',
+        icon: '🏆',
+        title: 'Підкорювач Змій',
+        description: 'Набрати 1000 очок у грі змійка',
+        requirement: { type: 'snake_score', value: 1000 }
     }
 ];
 
@@ -1294,6 +1308,10 @@ async function checkAchievements() {
                 isUnlocked = uniqueUsersToday.size >= achievement.requirement.value;
             } else if (achievement.requirement.type === 'daily_total_clicks') {
                 isUnlocked = totalClicksToday >= achievement.requirement.value;
+            } else if (achievement.requirement.type === 'snake_players') {
+                // Count unique snake players
+                const snakePlayersSnapshot = await db.collection('snakeHighScores').get();
+                isUnlocked = snakePlayersSnapshot.size >= achievement.requirement.value;
             }
 
             // If achievement is unlocked and not yet recorded
@@ -1400,6 +1418,13 @@ async function checkPersonalAchievements() {
                 const currentMinutes = now.getMinutes();
                 const [targetHour, targetMinute] = achievement.requirement.value.split(':').map(Number);
                 isUnlocked = currentHours === targetHour && currentMinutes === targetMinute;
+            } else if (achievement.requirement.type === 'snake_score') {
+                // Check user's max snake score
+                const userSnakeDoc = await db.collection('snakeHighScores').doc(currentUser).get();
+                if (userSnakeDoc.exists) {
+                    const userData = userSnakeDoc.data();
+                    isUnlocked = (userData.maxScore || 0) >= achievement.requirement.value;
+                }
             }
 
             // If achievement is unlocked and not yet recorded
