@@ -14,7 +14,7 @@ let snakeGame = {
     direction: { x: 0, y: 0 },
     score: 0,
     gameActive: false,
-    gameSpeed: 234,
+    gameSpeed: 257,
     lastDirection: { x: 0, y: 0 },
     touchStartX: 0,
     touchStartY: 0,
@@ -385,7 +385,7 @@ function initializeSnakeGame() {
     snakeGame.score = 0;
     snakeGame.gameActive = false;
     snakeGame.justAte = false;
-    snakeGame.gameSpeed = 234;
+    snakeGame.gameSpeed = 257;
     
     generateFood();
     console.log('Game initialized. Snake at:', snakeGame.snake[0], 'TileCount:', snakeGame.tileCount);
@@ -703,7 +703,7 @@ function eatFood() {
     generateFood();
 
     // Increase speed slightly
-    if (snakeGame.gameSpeed > 125) {
+    if (snakeGame.gameSpeed > 137) {
         snakeGame.gameSpeed -= 3;
         stopSnakeGameLoop();
         startSnakeGameLoop();
