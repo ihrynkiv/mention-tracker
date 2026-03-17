@@ -49,16 +49,7 @@ async function setupMinigameTab() {
         </div>
         
         <div class="daily-challenges">
-            <div class="challenge-card coming-soon">
-                <div class="challenge-icon">🧭</div>
-                <div class="challenge-info">
-                    <h3>Лабіринт дня</h3>
-                    <p>Допоможи Михайлу дістатитись Краківської</p>
-                    <div class="challenge-status">Незабаром...</div>
-                </div>
-            </div>
-            
-            <div class="challenge-card available">
+           <div class="challenge-card available">
                 <div class="challenge-icon">🐍</div>
                 <div class="challenge-info">
                     <h3>Михайло збирає зілля</h3>
@@ -67,6 +58,15 @@ async function setupMinigameTab() {
                         <div class="challenge-status" onclick="startSnakeGame()">▶️ Грати</div>
                         <div class="records-status" onclick="showSnakeLeaderboard()">🏆 Рекорди</div>
                     </div>
+                </div>
+            </div>
+
+            <div class="challenge-card coming-soon">
+                <div class="challenge-icon">🧭</div>
+                <div class="challenge-info">
+                    <h3>Лабіринт дня</h3>
+                    <p>Допоможи Михайлу дістатитись Краківської</p>
+                    <div class="challenge-status">Незабаром...</div>
                 </div>
             </div>
             
@@ -99,7 +99,7 @@ async function setupMinigameTab() {
 async function getMazeStatus() {
     const today = new Date().toDateString();
     const completionData = await getUserMazeCompletion(today);
-    
+
     if (completionData) {
         const timeText = completionData.completionTime ? ` за ${completionData.completionTime}с` : '';
         return `<span class="completed">✅ Пройдено${timeText}</span>`;
@@ -123,13 +123,13 @@ function showSnakeLeaderboard() {
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     const modal = document.createElement('div');
     modal.id = 'snakeLeaderboardModal';
     modal.className = 'game-over-modal';
     modal.style.display = 'flex';
     modal.style.zIndex = '10000';
-    
+
     modal.innerHTML = `
         <div class="modal-content leaderboard-modal-content">
             <h3>🏆 Рекорди змійки</h3>
@@ -145,9 +145,9 @@ function showSnakeLeaderboard() {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     // Load score leaderboard by default
     loadScoreLeaderboard();
 }
@@ -174,9 +174,9 @@ function showLengthLeaderboard() {
 async function loadScoreLeaderboard() {
     const content = document.getElementById('leaderboardContent');
     if (!content) return;
-    
+
     content.innerHTML = '<div class="loading">Завантаження рекордів...</div>';
-    
+
     try {
         const leaderboard = await getSnakeLeaderboard('score');
         displayLeaderboard(leaderboard, 'score');
@@ -194,9 +194,9 @@ async function loadScoreLeaderboard() {
 async function loadLengthLeaderboard() {
     const content = document.getElementById('leaderboardContent');
     if (!content) return;
-    
+
     content.innerHTML = '<div class="loading">Завантаження рекордів...</div>';
-    
+
     try {
         const leaderboard = await getSnakeLeaderboard('length');
         displayLeaderboard(leaderboard, 'length');
@@ -215,19 +215,19 @@ function displayLeaderboard(leaderboard, type) {
     console.log('displayLeaderboard called with:', { leaderboard, type });
     const content = document.getElementById('leaderboardContent');
     console.log('leaderboardContent element:', content);
-    
+
     if (!content) {
         console.error('leaderboardContent element not found');
         return;
     }
-    
+
     if (!leaderboard) {
         console.log('leaderboard is null/undefined');
     } else {
         console.log('leaderboard length:', leaderboard.length);
         console.log('leaderboard data:', leaderboard);
     }
-    
+
     if (!content || !leaderboard || leaderboard.length === 0) {
         console.log('Showing no records message');
         content.innerHTML = `
@@ -238,21 +238,21 @@ function displayLeaderboard(leaderboard, type) {
         `;
         return;
     }
-    
+
     const currentUser = getCurrentUser();
     let html = '<div class="leaderboard-list">';
-    
+
     leaderboard.forEach((record, index) => {
         const rank = index + 1;
         const isCurrentUser = record.username === currentUser;
         const value = type === 'score' ? record.maxScore : record.maxLength;
         const label = type === 'score' ? 'очок' : 'сегментів';
-        
+
         let rankIcon = `${rank}`;
         if (rank === 1) rankIcon = '🥇';
         else if (rank === 2) rankIcon = '🥈';
         else if (rank === 3) rankIcon = '🥉';
-        
+
         html += `
             <div class="leaderboard-entry ${rank <= 3 ? 'top-three' : ''} ${isCurrentUser ? 'current-user' : ''}">
                 <div class="rank">${rankIcon}</div>
@@ -264,7 +264,7 @@ function displayLeaderboard(leaderboard, type) {
             </div>
         `;
     });
-    
+
     html += '</div>';
     content.innerHTML = html;
 }
@@ -274,11 +274,11 @@ function formatDate(timestamp) {
     const now = new Date();
     const diffMs = now - date;
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Сьогодні';
     if (diffDays === 1) return 'Вчора';
     if (diffDays < 7) return `${diffDays} днів тому`;
-    
+
     return date.toLocaleDateString('uk-UA', {
         day: 'numeric',
         month: 'short'
@@ -290,16 +290,16 @@ async function getSnakeLeaderboard(type = 'score') {
     try {
         console.log('Fetching snake leaderboard for type:', type);
         const orderByField = type === 'score' ? 'maxScore' : 'maxLength';
-        
+
         const snapshot = await firebase.firestore()
             .collection('snakeHighScores')
             .orderBy(orderByField, 'desc')
             .limit(10)
             .get();
-            
+
         console.log('Firebase snapshot size:', snapshot.size);
         console.log('Firebase snapshot docs:', snapshot.docs);
-        
+
         const leaderboardData = snapshot.docs.map(doc => {
             const data = doc.data();
             console.log('Document data:', doc.id, data);
@@ -310,7 +310,7 @@ async function getSnakeLeaderboard(type = 'score') {
                 achievedAt: data.lastUpdated || data.timestamp
             };
         });
-        
+
         console.log('Processed leaderboard data:', leaderboardData);
         return leaderboardData;
     } catch (error) {
@@ -324,16 +324,16 @@ async function saveSnakeHighScoresToFirebase(username, maxScore, maxLength) {
         const docRef = firebase.firestore()
             .collection('snakeHighScores')
             .doc(username);
-            
+
         const doc = await docRef.get();
         const now = Date.now();
-        
+
         if (doc.exists) {
             const currentData = doc.data();
             const updateData = {
                 lastUpdated: now
             };
-            
+
             // Only update if new scores are higher
             if (maxScore > (currentData.maxScore || 0)) {
                 updateData.maxScore = maxScore;
@@ -341,7 +341,7 @@ async function saveSnakeHighScoresToFirebase(username, maxScore, maxLength) {
             if (maxLength > (currentData.maxLength || 0)) {
                 updateData.maxLength = maxLength;
             }
-            
+
             // Only update if there are actual changes
             if (updateData.maxScore !== undefined || updateData.maxLength !== undefined) {
                 await docRef.update(updateData);
@@ -378,7 +378,7 @@ async function createTestSnakeData() {
             timestamp: Date.now(),
             lastUpdated: Date.now()
         });
-        
+
         await firebase.firestore().collection('snakeHighScores').doc('testuser2').set({
             username: 'testuser2',
             maxScore: 120,
@@ -386,7 +386,7 @@ async function createTestSnakeData() {
             timestamp: Date.now(),
             lastUpdated: Date.now()
         });
-        
+
         console.log('Test data created successfully');
     } catch (error) {
         console.error('Error creating test data:', error);
