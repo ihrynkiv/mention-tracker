@@ -1272,6 +1272,13 @@ const PERSONAL_ACHIEVEMENTS = [
         title: 'Підкорювач Змій',
         description: 'Набрати 1000 очок у грі змійка',
         requirement: { type: 'snake_score', value: 1000 }
+    },
+    {
+        id: 'birthday_greeting',
+        icon: '🎂',
+        title: 'Привітав з ДН',
+        description: 'Привітати Михайла з днем народження',
+        requirement: { type: 'birthday_mention', value: '15.05' }
     }
 ];
 
@@ -1422,6 +1429,11 @@ async function checkPersonalAchievements() {
                     const userData = userSnakeDoc.data();
                     isUnlocked = (userData.maxScore || 0) >= achievement.requirement.value;
                 }
+            } else if (achievement.requirement.type === 'birthday_mention') {
+                // Check if user clicked on Mykhailo's birthday (15.05)
+                const today = new Date();
+                const todayFormatted = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+                isUnlocked = todayFormatted === achievement.requirement.value;
             }
 
             // If achievement is unlocked and not yet recorded
