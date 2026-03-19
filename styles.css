@@ -1056,13 +1056,15 @@ body {
         font-size: 0.8em;
         line-height: 1.1;
     }
-    
+
     .ranking-entry .achievement-icons {
         gap: 1px;
         max-height: 20px;
         margin-top: 1px;
+        align-items: center;
+        justify-content: center;
     }
-    
+
     .ranking-entry .achievement-icon {
         font-size: 12px;
     }
