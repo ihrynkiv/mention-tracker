@@ -358,7 +358,7 @@ body {
 }
 
 .switcher-btn {
-    padding: 10px 20px;
+    padding: 10px 16px;
     border: none;
     background: none;
     border-radius: 20px;
@@ -367,6 +367,10 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     color: #666;
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .switcher-btn.active {
@@ -934,6 +938,24 @@ body {
         gap: 0;
         min-width: 60px;
         padding: 12px 8px;
+    }
+    
+    /* Better spacing for 3-button switchers on mobile */
+    .switcher-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .achievements-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .stats-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
     }
 }
 
