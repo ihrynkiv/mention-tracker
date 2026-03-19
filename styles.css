@@ -392,6 +392,19 @@ body {
     margin: 0 auto;
 }
 
+/* Override grid for rankings content */
+.achievements-list:has(.percentile-info),
+.achievements-list:has(.rankings-list) {
+    display: block;
+    max-width: 600px;
+}
+
+/* Fallback for browsers without :has() support */
+.achievements-list.rankings-mode {
+    display: block !important;
+    max-width: 600px;
+}
+
 .achievement-item {
     background: #f8f9fa;
     border-radius: 15px;
@@ -484,6 +497,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100%;
 }
 
 .ranking-entry {
@@ -495,6 +509,10 @@ body {
     align-items: center;
     gap: 15px;
     transition: all 0.3s ease;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
 }
 
 .ranking-entry:hover {
@@ -527,28 +545,36 @@ body {
     font-size: 1.8em;
 }
 
-.user-info {
+.ranking-entry .user-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
-.username {
+.ranking-entry .username {
     font-size: 1.1em;
     font-weight: bold;
     color: #333;
     margin-bottom: 2px;
+    position: static;
+    display: block;
+    width: auto;
 }
 
-.achievement-count {
+.ranking-entry .achievement-count {
     color: #666;
     font-size: 0.9em;
+    position: static;
+    display: block;
 }
 
 .ranking-entry.current-user .username {
-    color: #155724;
+    color: #155724 !important;
 }
 
 .ranking-entry.current-user .achievement-count {
-    color: #1e7e34;
+    color: #1e7e34 !important;
 }
 
 .no-achievements {

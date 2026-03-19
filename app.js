@@ -1555,6 +1555,7 @@ function switchAchievements(type) {
 async function loadAchievements() {
     try {
         const achievementsContainer = document.getElementById('achievementsList');
+        achievementsContainer.classList.remove('rankings-mode');
         achievementsContainer.innerHTML = '';
 
         const achievements = currentAchievementView === 'global' ? GLOBAL_ACHIEVEMENTS : PERSONAL_ACHIEVEMENTS;
@@ -1632,6 +1633,7 @@ async function loadAchievements() {
 async function loadUserRankings() {
     try {
         const achievementsContainer = document.getElementById('achievementsList');
+        achievementsContainer.classList.add('rankings-mode');
         achievementsContainer.innerHTML = '<div class="loading">Завантаження рейтингу...</div>';
 
         // Get all users who have achievements
