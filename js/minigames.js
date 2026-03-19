@@ -105,7 +105,7 @@ async function getMazeStatus() {
 
     if (completionData) {
         const timeText = completionData.completionTime ? ` за ${completionData.completionTime}с` : '';
-        return `<span class="completed">✅ Пройдено${timeText}</span>`;
+        return `<span>✅ Пройдено${timeText}</span>`;
     } else {
         return '<span class="not-started">▶️ Почати</span>';
     }

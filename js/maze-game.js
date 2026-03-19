@@ -6,7 +6,7 @@
 // Firebase integration for maze completion
 async function checkMazeCompletion(dateString) {
     if (!currentUser) return false;
-    
+
     try {
         const docId = `${dateString}_${currentUser}`;
         const doc = await db.collection('mazeCompletions').doc(docId).get();
@@ -19,7 +19,7 @@ async function checkMazeCompletion(dateString) {
 
 async function saveMazeCompletion(dateString, completionData) {
     if (!currentUser) return;
-    
+
     try {
         const docId = `${dateString}_${currentUser}`;
         await db.collection('mazeCompletions').doc(docId).set({
@@ -42,12 +42,12 @@ async function getTodaysMazeLeaderboard(dateString) {
             .orderBy('completionTime')
             .limit(10)
             .get();
-        
+
         const leaderboard = [];
         completions.forEach(doc => {
             leaderboard.push(doc.data());
         });
-        
+
         return leaderboard;
     } catch (error) {
         console.error('Error fetching maze leaderboard:', error);
@@ -58,7 +58,7 @@ async function getTodaysMazeLeaderboard(dateString) {
 // Get user's maze completion data from Firebase
 async function getUserMazeCompletion(dateString) {
     if (!currentUser) return null;
-    
+
     try {
         const docId = `${dateString}_${currentUser}`;
         const doc = await db.collection('mazeCompletions').doc(docId).get();
@@ -75,12 +75,12 @@ async function getUserMazeCompletion(dateString) {
 // Check and award maze completion achievement
 async function checkMazeCompletionAchievement() {
     if (!currentUser) return;
-    
+
     try {
         // Check if user already has this achievement
         const achievementId = `${currentUser}_personal_maze_completion`;
         const achievementDoc = await db.collection('personalAchievements').doc(achievementId).get();
-        
+
         if (!achievementDoc.exists) {
             // Award the achievement
             await db.collection('personalAchievements').doc(achievementId).set({
@@ -89,7 +89,7 @@ async function checkMazeCompletionAchievement() {
                 unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 unlockedDate: new Date().toLocaleDateString('uk-UA')
             });
-            
+
             showNotification('🏆 Досягнення відкрито: Дістався Краківської!', 'success');
         }
     } catch (error) {
@@ -126,7 +126,7 @@ class SeededRandom {
         this.seed = seed % 2147483647;
         if (this.seed <= 0) this.seed += 2147483646;
     }
-    
+
     next() {
         this.seed = (this.seed * 16807) % 2147483647;
         return (this.seed - 1) / 2147483646;
@@ -138,42 +138,42 @@ function generateDailyMaze() {
     const today = new Date().toDateString();
     const seed = hashDate(today);
     const rng = new SeededRandom(seed);
-    
+
     const { width, height } = mazeGame;
     const maze = Array(height).fill(null).map(() => Array(width).fill(1)); // 1 = wall
-    
+
     // Recursive backtracking maze generation
     function carve(x, y) {
         maze[y][x] = 0; // 0 = path
-        
+
         const directions = [
             [0, -2], [2, 0], [0, 2], [-2, 0] // North, East, South, West
         ];
-        
+
         // Shuffle directions using seeded random
         for (let i = directions.length - 1; i > 0; i--) {
             const j = Math.floor(rng.next() * (i + 1));
             [directions[i], directions[j]] = [directions[j], directions[i]];
         }
-        
+
         for (const [dx, dy] of directions) {
             const nx = x + dx;
             const ny = y + dy;
-            
+
             if (nx >= 0 && nx < width && ny >= 0 && ny < height && maze[ny][nx] === 1) {
                 maze[y + dy/2][x + dx/2] = 0; // Carve connecting path
                 carve(nx, ny);
             }
         }
     }
-    
+
     // Start carving from (1,1) to ensure odd coordinates
     carve(1, 1);
-    
+
     // Ensure start and end are accessible
     maze[1][1] = 0; // Start position
     maze[height-2][width-2] = 0; // End position
-    
+
     return maze;
 }
 
@@ -181,16 +181,16 @@ function generateDailyMaze() {
 async function startMazeGame() {
     const gameArea = document.getElementById('gameArea');
     if (!gameArea) return;
-    
+
     // Check if user already completed today's maze
     const today = new Date().toDateString();
     const hasCompleted = await checkMazeCompletion(today);
-    
+
     if (hasCompleted) {
         showMazeLeaderboard();
         return;
     }
-    
+
     // Generate today's maze
     mazeGame.maze = generateDailyMaze();
     mazeGame.playerPos = { x: 1, y: 1 };
@@ -198,7 +198,7 @@ async function startMazeGame() {
     mazeGame.startTime = Date.now();
     mazeGame.moves = 0;
     mazeGame.gameActive = true;
-    
+
     gameArea.style.display = 'block';
     gameArea.innerHTML = `
         <div class="maze-game">
@@ -236,16 +236,16 @@ async function startMazeGame() {
             </div>
         </div>
     `;
-    
+
     // Setup keyboard controls
     document.addEventListener('keydown', handleMazeKeydown);
-    
+
     // Start game timer
     startMazeTimer();
-    
+
     // Initial render
     renderMaze();
-    
+
     // Scroll to game area
     gameArea.scrollIntoView({ behavior: 'smooth' });
 }
@@ -253,9 +253,9 @@ async function startMazeGame() {
 // Handle keyboard input
 function handleMazeKeydown(event) {
     if (!mazeGame.gameActive) return;
-    
+
     switch(event.key) {
-        case 'ArrowUp': 
+        case 'ArrowUp':
             moveMazePlayer(0, -1);
             event.preventDefault();
             break;
@@ -277,22 +277,22 @@ function handleMazeKeydown(event) {
 // Move player in maze
 function moveMazePlayer(dx, dy) {
     if (!mazeGame.gameActive) return;
-    
+
     const newX = mazeGame.playerPos.x + dx;
     const newY = mazeGame.playerPos.y + dy;
-    
+
     // Check boundaries and walls
-    if (newX >= 0 && newX < mazeGame.width && 
+    if (newX >= 0 && newX < mazeGame.width &&
         newY >= 0 && newY < mazeGame.height &&
         mazeGame.maze[newY][newX] === 0) {
-        
+
         mazeGame.playerPos.x = newX;
         mazeGame.playerPos.y = newY;
         mazeGame.moves++;
-        
+
         document.getElementById('moveCount').textContent = mazeGame.moves;
         renderMaze();
-        
+
         // Check if reached target
         if (newX === mazeGame.targetPos.x && newY === mazeGame.targetPos.y) {
             completeMazeGame();
@@ -304,20 +304,20 @@ function moveMazePlayer(dx, dy) {
 function renderMaze() {
     const canvas = document.getElementById('mazeCanvas');
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     const cellSize = 30;
-    
+
     // Clear canvas
     ctx.fillStyle = '#2c3e50';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw maze
     for (let y = 0; y < mazeGame.height; y++) {
         for (let x = 0; x < mazeGame.width; x++) {
             const cellX = x * cellSize;
             const cellY = y * cellSize;
-            
+
             if (mazeGame.maze[y][x] === 0) {
                 // Path
                 ctx.fillStyle = '#ecf0f1';
@@ -326,7 +326,7 @@ function renderMaze() {
             // Walls remain dark (already filled)
         }
     }
-    
+
     // Draw target (Kraków - books)
     const targetX = mazeGame.targetPos.x * cellSize;
     const targetY = mazeGame.targetPos.y * cellSize;
@@ -334,13 +334,13 @@ function renderMaze() {
     ctx.fillRect(targetX + 2, targetY + 2, cellSize - 4, cellSize - 4);
     ctx.font = '20px Arial';
     ctx.fillText('📚', targetX + 5, targetY + 22);
-    
+
     // Draw start (plane)
     ctx.fillStyle = '#3498db';
     ctx.fillRect(2, 2, cellSize - 4, cellSize - 4);
     ctx.font = '20px Arial';
     ctx.fillText('✈️', 5, 22);
-    
+
     // Draw player (Mykhailo)
     const playerX = mazeGame.playerPos.x * cellSize;
     const playerY = mazeGame.playerPos.y * cellSize;
@@ -358,7 +358,7 @@ function startMazeTimer() {
             const elapsed = Math.floor((Date.now() - mazeGame.startTime) / 1000);
             const minutes = Math.floor(elapsed / 60);
             const seconds = elapsed % 60;
-            document.getElementById('timeCount').textContent = 
+            document.getElementById('timeCount').textContent =
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
     }, 1000);
@@ -368,27 +368,27 @@ function startMazeTimer() {
 async function completeMazeGame() {
     mazeGame.gameActive = false;
     clearInterval(mazeTimer);
-    
+
     const elapsed = Math.floor((Date.now() - mazeGame.startTime) / 1000);
     const today = new Date().toDateString();
-    
+
     const completionData = {
         time: elapsed,
         moves: mazeGame.moves
     };
-    
+
     // Save to Firebase
     await saveMazeCompletion(today, completionData);
-    
+
     // Check and award personal achievement
     await checkMazeCompletionAchievement();
-    
+
     // Show completion message
     showNotification(`🎉 Михайло дістався Краківської! Час: ${elapsed}с, Ходів: ${mazeGame.moves}`, 'success');
-    
+
     // Update status in main menu
-    updateChallengeStatus('maze', `<span class="completed">✅ Пройдено за ${elapsed}с</span>`);
-    
+    updateChallengeStatus('maze', `<span>✅ Пройдено за ${elapsed}с</span>`);
+
     // Show leaderboard after delay
     setTimeout(() => {
         showMazeLeaderboard();
@@ -399,10 +399,10 @@ async function completeMazeGame() {
 async function showMazeLeaderboard() {
     const gameArea = document.getElementById('gameArea');
     if (!gameArea) return;
-    
+
     const today = new Date().toDateString();
     const leaderboard = await getTodaysMazeLeaderboard(today);
-    
+
     let leaderboardHtml = '';
     if (leaderboard.length === 0) {
         leaderboardHtml = '<div class="no-completions">Ще ніхто не пройшов сьогоднішній лабіринт 🤔</div>';
@@ -411,7 +411,7 @@ async function showMazeLeaderboard() {
             const rank = index + 1;
             const isCurrentUser = entry.username === currentUser;
             const crownIcon = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-            
+
             return `
                 <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''} rank-${rank}">
                     <div class="rank-icon">${crownIcon}</div>
@@ -424,7 +424,7 @@ async function showMazeLeaderboard() {
             `;
         }).join('');
     }
-    
+
     gameArea.style.display = 'block';
     gameArea.innerHTML = `
         <div class="maze-leaderboard">
@@ -445,7 +445,7 @@ async function showMazeLeaderboard() {
             </div>
         </div>
     `;
-    
+
     // Scroll to game area
     gameArea.scrollIntoView({ behavior: 'smooth' });
 }
@@ -455,7 +455,7 @@ function closeMazeGame() {
     document.removeEventListener('keydown', handleMazeKeydown);
     clearInterval(mazeTimer);
     mazeGame.gameActive = false;
-    
+
     const gameArea = document.getElementById('gameArea');
     if (gameArea) {
         gameArea.style.display = 'none';
