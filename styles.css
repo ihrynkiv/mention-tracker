@@ -1000,28 +1000,41 @@ body {
     }
 
     .ranking-entry {
-        padding: 12px 15px;
-        gap: 12px;
-        margin-bottom: 8px;
-        border-radius: 10px;
+        padding: 10px 12px;
+        gap: 10px;
+        margin-bottom: 6px;
+        border-radius: 8px;
+        align-items: center;
     }
 
     .ranking-entry .rank {
-        font-size: 1.3em;
-        min-width: 40px;
+        font-size: 1.2em;
+        min-width: 35px;
+        max-width: 35px;
+        flex-shrink: 0;
     }
 
     .ranking-entry.top-three .rank {
-        font-size: 1.5em;
+        font-size: 1.4em;
+    }
+    
+    .ranking-entry .user-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
-    .username {
-        font-size: 1em;
+    .ranking-entry .username {
+        font-size: 0.95em;
         margin-bottom: 1px;
+        line-height: 1.2;
     }
 
-    .achievement-count {
-        font-size: 0.85em;
+    .ranking-entry .achievement-count {
+        font-size: 0.8em;
+        line-height: 1.1;
     }
 
     .rankings-list {
