@@ -438,24 +438,6 @@ async function loadUserStats() {
             return;
         }
 
-        // Get all personal achievements for badge display
-        const personalAchievements = await db.collection('personalAchievements').get();
-        const userBadges = {};
-
-        personalAchievements.forEach(doc => {
-            const data = doc.data();
-            const username = data.username;
-            const achievementId = data.achievementId;
-
-            // Find the achievement to get its icon
-            const achievement = PERSONAL_ACHIEVEMENTS.find(a => a.id === achievementId);
-            if (achievement) {
-                if (!userBadges[username]) {
-                    userBadges[username] = [];
-                }
-                userBadges[username].push(achievement.icon);
-            }
-        });
 
         // Process users and get their personal streaks
         const userPromises = [];
@@ -477,10 +459,6 @@ async function loadUserStats() {
         usersList.forEach((userData, index) => {
             const username = userData.username;
             const personalStreak = userStreaks[index];
-            const badges = userBadges[username] || [];
-            const badgesHtml = badges.length > 0
-                ? `<span class="user-badges">${badges.join('')}</span>`
-                : '';
 
             const streakHtml = personalStreak > 0
                 ? `<span class="personal-streak">🔥${personalStreak}</span>`
@@ -491,7 +469,6 @@ async function loadUserStats() {
             statItem.innerHTML = `
                 <div class="username-with-badges">
                     <span class="username">${username}</span>
-                    ${badgesHtml}
                     ${streakHtml}
                 </div>
                 <span class="count">${userData.mentionCount}</span>

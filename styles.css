@@ -691,19 +691,6 @@ body {
     font-weight: bold;
 }
 
-.user-badges {
-    display: flex;
-    gap: 2px;
-    font-size: 16px;
-    opacity: 0.8;
-}
-
-.user-badges:hover {
-    opacity: 1;
-    transform: scale(1.1);
-    transition: all 0.3s ease;
-}
-
 .personal-streak {
     background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
     color: white;
