@@ -1649,11 +1649,17 @@ async function loadUserRankings() {
         globalSnapshot.forEach(doc => {
             const achievement = doc.data();
             if (achievement.unlockedBy && Array.isArray(achievement.unlockedBy)) {
+                // Find matching achievement definition to get icon
+                const achievementDef = GLOBAL_ACHIEVEMENTS.find(a => a.id === doc.id);
+                const icon = achievementDef ? achievementDef.icon : '🏆';
+                
                 achievement.unlockedBy.forEach(username => {
                     if (!userAchievements.has(username)) {
-                        userAchievements.set(username, 0);
+                        userAchievements.set(username, { count: 0, icons: [] });
                     }
-                    userAchievements.set(username, userAchievements.get(username) + 1);
+                    const userData = userAchievements.get(username);
+                    userData.count++;
+                    userData.icons.push(icon);
                 });
             }
         });
@@ -1663,16 +1669,26 @@ async function loadUserRankings() {
             const data = doc.data();
             const username = data.username; // Get username from document data, not doc ID
             if (username && (data.unlockedAt || data.unlockedDate)) {
+                // Find matching achievement definition to get icon
+                const achievementDef = PERSONAL_ACHIEVEMENTS.find(a => a.id === data.achievementId);
+                const icon = achievementDef ? achievementDef.icon : '🎯';
+                
                 if (!userAchievements.has(username)) {
-                    userAchievements.set(username, 0);
+                    userAchievements.set(username, { count: 0, icons: [] });
                 }
-                userAchievements.set(username, userAchievements.get(username) + 1);
+                const userData = userAchievements.get(username);
+                userData.count++;
+                userData.icons.push(icon);
             }
         });
 
         // Convert to array and sort by achievement count
         const rankings = Array.from(userAchievements.entries())
-            .map(([username, count]) => ({ username, count }))
+            .map(([username, userData]) => ({ 
+                username, 
+                count: userData.count, 
+                icons: userData.icons 
+            }))
             .sort((a, b) => b.count - a.count);
 
         if (rankings.length === 0) {
@@ -1712,12 +1728,17 @@ async function loadUserRankings() {
             else if (rank === 2) rankIcon = '🥈';
             else if (rank === 3) rankIcon = '🥉';
 
+            // Generate achievement icons HTML
+            const iconsHtml = user.icons.length > 0 ? 
+                `<div class="achievement-icons">${user.icons.map(icon => `<span class="achievement-icon">${icon}</span>`).join('')}</div>` : '';
+            
             rankingsHTML += `
                 <div class="ranking-entry ${rank <= 3 ? 'top-three' : ''} ${isCurrentUser ? 'current-user' : ''}">
                     <div class="rank">${rankIcon}</div>
                     <div class="user-info">
                         <div class="username">${user.username}${isCurrentUser ? ' (ви)' : ''}</div>
                         <div class="achievement-count">${user.count} ${user.count === 1 ? 'досягнення' : user.count < 5 ? 'досягнення' : 'досягнень'}</div>
+                        ${iconsHtml}
                     </div>
                 </div>
             `;

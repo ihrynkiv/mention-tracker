@@ -556,6 +556,7 @@ body {
     justify-content: center;
     min-width: 0;
     overflow: hidden;
+    gap: 2px;
 }
 
 .ranking-entry .username {
@@ -574,6 +575,26 @@ body {
     font-size: 0.9em;
     margin: 0;
     line-height: 1.2;
+}
+
+.ranking-entry .achievement-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 2px;
+    max-height: 24px;
+    overflow: hidden;
+}
+
+.ranking-entry .achievement-icon {
+    font-size: 14px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.ranking-entry .achievement-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .ranking-entry.current-user .username {
@@ -1034,6 +1055,16 @@ body {
     .ranking-entry .achievement-count {
         font-size: 0.8em;
         line-height: 1.1;
+    }
+    
+    .ranking-entry .achievement-icons {
+        gap: 1px;
+        max-height: 20px;
+        margin-top: 1px;
+    }
+    
+    .ranking-entry .achievement-icon {
+        font-size: 12px;
     }
 
     .rankings-list {
