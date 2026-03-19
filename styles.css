@@ -509,15 +509,14 @@ body {
     align-items: center;
     justify-content: flex-start;
     gap: 15px;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease;
     width: 100%;
     box-sizing: border-box;
     margin-bottom: 0;
 }
 
 .ranking-entry:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background: #e9ecef;
 }
 
 .ranking-entry.top-three {
