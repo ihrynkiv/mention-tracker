@@ -873,9 +873,6 @@ body {
 }
 
 .user-info {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
     color: #666;
     font-size: 14px;
 }
@@ -924,17 +921,17 @@ body {
         font-size: 1.5em;
         margin-bottom: 15px;
     }
-    
+
     /* Make all mobile titles more compact */
     h2, h3 {
         font-size: 1.4em !important;
         margin-bottom: 10px !important;
     }
-    
+
     .minigames-header h2 {
         font-size: 1.5em !important;
     }
-    
+
     .minigames-header p {
         font-size: 14px !important;
         margin-bottom: 15px !important;
@@ -957,76 +954,76 @@ body {
         text-align: center;
         margin-top: 20px;
     }
-    
+
     /* Hide tab text on mobile, show only icons */
     .tab-text {
         display: none;
     }
-    
+
     .tab-icon {
         font-size: 24px;
     }
-    
+
     .tab-button {
         gap: 0;
         min-width: 60px;
         padding: 12px 8px;
     }
-    
+
     /* Better spacing for 3-button switchers on mobile */
     .switcher-btn {
         padding: 8px 12px;
         font-size: 13px;
     }
-    
+
     .achievements-header {
         flex-direction: column;
         align-items: stretch;
         gap: 15px;
     }
-    
+
     .stats-header {
         flex-direction: column;
         align-items: stretch;
         gap: 15px;
     }
-    
+
     /* Mobile rankings improvements */
     .percentile-info {
         padding: 10px 15px;
         margin-bottom: 12px;
         border-radius: 10px;
     }
-    
+
     .percentile-info p {
         font-size: 0.9em;
     }
-    
+
     .ranking-entry {
         padding: 12px 15px;
         gap: 12px;
         margin-bottom: 8px;
         border-radius: 10px;
     }
-    
+
     .ranking-entry .rank {
         font-size: 1.3em;
         min-width: 40px;
     }
-    
+
     .ranking-entry.top-three .rank {
         font-size: 1.5em;
     }
-    
+
     .username {
         font-size: 1em;
         margin-bottom: 1px;
     }
-    
+
     .achievement-count {
         font-size: 0.85em;
     }
-    
+
     .rankings-list {
         gap: 8px;
     }
