@@ -458,6 +458,113 @@ body {
     color: #6c757d;
 }
 
+/* User Rankings Styles */
+.percentile-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.percentile-info p {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.rankings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ranking-entry {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.ranking-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-entry.top-three {
+    background: linear-gradient(135deg, #fff3cd 0%, #d1ecf1 100%);
+    border-color: #667eea;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+}
+
+.ranking-entry.current-user {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #28a745;
+    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+    font-weight: bold;
+}
+
+.ranking-entry .rank {
+    font-size: 1.5em;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    color: #495057;
+}
+
+.ranking-entry.top-three .rank {
+    font-size: 1.8em;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.username {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.achievement-count {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.ranking-entry.current-user .username {
+    color: #155724;
+}
+
+.ranking-entry.current-user .achievement-count {
+    color: #1e7e34;
+}
+
+.no-achievements {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.no-achievements p {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 1.1em;
+}
+
 .stats-content {
     padding: 20px 0;
 }

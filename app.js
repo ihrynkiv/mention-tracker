@@ -76,12 +76,12 @@ function getFromActivityCache(dateString) {
     if (dateString === today) {
         return null; // Force fresh fetch for today
     }
-    
+
     // Check if cache is still fresh (3 minutes for historical data)
     if (lastCacheUpdate && Date.now() - lastCacheUpdate < CACHE_EXPIRY_MS) {
         return activityCache.get(dateString) || null;
     }
-    
+
     return null; // Cache expired
 }
 
@@ -90,7 +90,7 @@ function debouncedUpdateActivityDisplay() {
     if (navigationTimeout) {
         clearTimeout(navigationTimeout);
     }
-    
+
     navigationTimeout = setTimeout(() => {
         updateActivityDisplay();
     }, NAVIGATION_DEBOUNCE_MS);
@@ -106,8 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkButtonCooldown();
 
     // Load saved achievement view
-    const savedView = localStorage.getItem('achievementView') || 'global';
-    currentAchievementView = savedView;
+    currentAchievementView = localStorage.getItem('achievementView') || 'global';
 });
 
 // Authentication functions
@@ -238,7 +237,6 @@ async function recordMention() {
 
     try {
         const now = new Date();
-        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
 
         // Check if user has clicked within the last 5 minutes (no timestamp filter to avoid index)
         const userMentionsQuery = await db.collection('userMentions')
@@ -294,7 +292,7 @@ async function recordMention() {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             mentionedBy: currentUser
         });
-        
+
         // Invalidate today's cache since new mention was added
         activityCache.delete(today);
 
@@ -320,7 +318,7 @@ async function recordMention() {
         // Show amazing animations
         showFireworks();
         showFireEmojis();
-        
+
         // Show success message with reason option
         showSuccessWithReasonOption(mentionId);
 
@@ -739,7 +737,7 @@ function setupActivityNavigation() {
     const prevBtn = document.getElementById('prevDate');
     const nextBtn = document.getElementById('nextDate');
     const todayBtn = document.getElementById('todayBtn');
-    
+
     if (!prevBtn || !nextBtn || !todayBtn) return;
 
     prevBtn.onclick = () => {
@@ -751,7 +749,7 @@ function setupActivityNavigation() {
         const today = new Date();
         const tomorrow = new Date(currentActivityDate);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
+
         if (tomorrow <= today) {
             currentActivityDate.setDate(currentActivityDate.getDate() + 1);
             debouncedUpdateActivityDisplay();
@@ -770,7 +768,7 @@ async function updateActivityDisplay() {
         const activityList = document.getElementById('activityList');
         const currentDateSpan = document.getElementById('currentDate');
         const nextBtn = document.getElementById('nextDate');
-        
+
         if (!activityList || !currentDateSpan) return;
 
         // Show loading
@@ -782,7 +780,7 @@ async function updateActivityDisplay() {
         // Update date display
         const today = new Date();
         const isToday = currentActivityDate.toDateString() === today.toDateString();
-        const isYesterday = currentActivityDate.toDateString() === 
+        const isYesterday = currentActivityDate.toDateString() ===
             new Date(today.getTime() - 24 * 60 * 60 * 1000).toDateString();
 
         if (isToday) {
@@ -809,13 +807,13 @@ async function updateActivityDisplay() {
         // Get activity for selected date - check cache first
         const dateString = currentActivityDate.toDateString();
         let activities = getFromActivityCache(dateString);
-        
+
         if (!activities) {
             console.log('Cache miss for', dateString, '- fetching from Firebase');
             const dayActivity = await db.collection('userMentions')
                 .where('date', '==', dateString)
                 .get();
-                
+
             // Convert to array and sort by timestamp (newest first)
             activities = [];
             dayActivity.forEach(doc => {
@@ -831,7 +829,7 @@ async function updateActivityDisplay() {
             });
 
             activities.sort((a, b) => b.timestamp - a.timestamp);
-            
+
             // Cache the results (except for today)
             const today = new Date().toDateString();
             if (dateString !== today) {
@@ -863,7 +861,7 @@ async function updateActivityDisplay() {
 
             const activityItem = document.createElement('div');
             activityItem.className = 'activity-item';
-            
+
             let reasonHtml = '';
             if (activity.reason) {
                 const canEdit = activity.username === currentUser;
@@ -883,7 +881,7 @@ async function updateActivityDisplay() {
                     </div>
                 `;
             }
-            
+
             activityItem.innerHTML = `
                 <div class="activity-header">
                     <span class="activity-user">${activity.username}</span>
@@ -891,7 +889,7 @@ async function updateActivityDisplay() {
                 </div>
                 ${reasonHtml}
             `;
-            
+
             activityList.appendChild(activityItem);
         });
 
@@ -975,7 +973,6 @@ async function checkButtonCooldown() {
 
     try {
         const now = new Date();
-        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
         // Get all mentions by this user (no timestamp filter to avoid index requirement)
         const userMentionsQuery = await db.collection('userMentions')
@@ -1529,12 +1526,18 @@ function switchAchievements(type) {
 
     if (type === 'global') {
         document.querySelector('#achievementsTab .switcher-btn:first-child').classList.add('active');
-    } else {
-        document.querySelector('#achievementsTab .switcher-btn:last-child').classList.add('active');
+    } else if (type === 'personal') {
+        document.querySelector('#achievementsTab .switcher-btn:nth-child(2)').classList.add('active');
+    } else if (type === 'rating') {
+        document.querySelector('#achievementsTab .switcher-btn:nth-child(3)').classList.add('active');
     }
 
-    // Reload achievements
-    loadAchievements();
+    // Reload achievements or ratings
+    if (type === 'rating') {
+        loadUserRankings();
+    } else {
+        loadAchievements();
+    }
 }
 
 async function loadAchievements() {
@@ -1611,6 +1614,107 @@ async function loadAchievements() {
     } catch (error) {
         console.error('Error loading achievements:', error);
         document.getElementById('achievementsList').innerHTML = '<p>Помилка завантаження досягнень</p>';
+    }
+}
+
+async function loadUserRankings() {
+    try {
+        const achievementsContainer = document.getElementById('achievementsList');
+        achievementsContainer.innerHTML = '<div class="loading">Завантаження рейтингу...</div>';
+
+        // Get all users who have achievements
+        const [globalSnapshot, personalSnapshot] = await Promise.all([
+            db.collection('achievements').get(),
+            db.collection('personalAchievements').get()
+        ]);
+
+        // Count achievements per user
+        const userAchievements = new Map();
+
+        // Process global achievements
+        globalSnapshot.forEach(doc => {
+            const achievement = doc.data();
+            if (achievement.unlockedBy && Array.isArray(achievement.unlockedBy)) {
+                achievement.unlockedBy.forEach(username => {
+                    if (!userAchievements.has(username)) {
+                        userAchievements.set(username, 0);
+                    }
+                    userAchievements.set(username, userAchievements.get(username) + 1);
+                });
+            }
+        });
+
+        // Process personal achievements
+        personalSnapshot.forEach(doc => {
+            const data = doc.data();
+            const username = doc.id; // Personal achievements use username as document ID
+            if (data.unlockedAt || data.unlockedDate) {
+                if (!userAchievements.has(username)) {
+                    userAchievements.set(username, 0);
+                }
+                userAchievements.set(username, userAchievements.get(username) + 1);
+            }
+        });
+
+        // Convert to array and sort by achievement count
+        const rankings = Array.from(userAchievements.entries())
+            .map(([username, count]) => ({ username, count }))
+            .sort((a, b) => b.count - a.count);
+
+        if (rankings.length === 0) {
+            achievementsContainer.innerHTML = `
+                <div class="no-achievements">
+                    <p>Поки що ніхто не має досягнень</p>
+                    <p>Станьте першим! 🏆</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate percentile for current user
+        const currentUser = getCurrentUser();
+        const currentUserRank = rankings.findIndex(user => user.username === currentUser);
+        let percentileMessage = '';
+
+        if (currentUserRank !== -1) {
+            const totalUsers = rankings.length;
+            const percentile = Math.round(((totalUsers - currentUserRank) / totalUsers) * 100);
+            percentileMessage = `
+                <div class="percentile-info">
+                    <p>💫 Ви кращі за ${percentile}% користувачів</p>
+                </div>
+            `;
+        }
+
+        // Generate rankings HTML
+        let rankingsHTML = percentileMessage + '<div class="rankings-list">';
+
+        rankings.forEach((user, index) => {
+            const rank = index + 1;
+            const isCurrentUser = user.username === currentUser;
+
+            let rankIcon = `${rank}`;
+            if (rank === 1) rankIcon = '🥇';
+            else if (rank === 2) rankIcon = '🥈';
+            else if (rank === 3) rankIcon = '🥉';
+
+            rankingsHTML += `
+                <div class="ranking-entry ${rank <= 3 ? 'top-three' : ''} ${isCurrentUser ? 'current-user' : ''}">
+                    <div class="rank">${rankIcon}</div>
+                    <div class="user-info">
+                        <div class="username">${user.username}${isCurrentUser ? ' (ви)' : ''}</div>
+                        <div class="achievement-count">${user.count} ${user.count === 1 ? 'досягнення' : user.count < 5 ? 'досягнення' : 'досягнень'}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        rankingsHTML += '</div>';
+        achievementsContainer.innerHTML = rankingsHTML;
+
+    } catch (error) {
+        console.error('Error loading user rankings:', error);
+        document.getElementById('achievementsList').innerHTML = '<p>Помилка завантаження рейтингу</p>';
     }
 }
 
@@ -1703,7 +1807,7 @@ function showSuccessWithReasonOption(mentionId) {
 function showReasonInput(mentionId) {
     // First hide the current modal
     hideSuccessMessage();
-    
+
     // Small delay then show input modal
     setTimeout(() => {
         const messageEl = document.getElementById('successMessage');
@@ -1734,7 +1838,7 @@ async function saveReason(mentionId) {
         await db.collection('userMentions').doc(mentionId).update({
             reason: reasonText
         });
-        
+
         showNotification('Причину збережено! 💾', 'success');
         hideSuccessMessage();
     } catch (error) {
@@ -1762,9 +1866,9 @@ function addReasonToExisting(mentionId) {
             <button class="reason-btn cancel-btn" onclick="cancelAddReason('${mentionId}')">Скасувати</button>
         </div>
     `;
-    
+
     noReasonDiv.parentNode.replaceChild(inputContainer, noReasonDiv);
-    
+
     const textarea = inputContainer.querySelector('.add-reason-input');
     textarea.focus();
 }
@@ -1780,7 +1884,7 @@ function cancelAddReason(mentionId) {
             ➕ Додати причину
         </button>
     `;
-    
+
     inputContainer.parentNode.replaceChild(noReasonDiv, inputContainer);
 }
 
@@ -1795,7 +1899,7 @@ async function saveNewReason(mentionId, reasonText) {
         await db.collection('userMentions').doc(mentionId).update({
             reason: trimmedReason
         });
-        
+
         // Update display to show the new reason
         const inputContainer = document.querySelector('.add-reason-container');
         if (inputContainer) {
@@ -1805,10 +1909,10 @@ async function saveNewReason(mentionId, reasonText) {
                 <span class="reason-text" id="reason-${mentionId}">${trimmedReason}</span>
                 <button class="edit-reason-btn" onclick="editReason('${mentionId}', '${trimmedReason.replace(/'/g, "\\'")}')">✏️</button>
             `;
-            
+
             inputContainer.parentNode.replaceChild(reasonDiv, inputContainer);
         }
-        
+
         showNotification('Причину додано! ✅', 'success');
     } catch (error) {
         console.error('Error saving new reason:', error);
@@ -1830,10 +1934,10 @@ function editReason(mentionId, currentReason) {
             <button class="reason-btn cancel-btn" onclick="cancelEditReason('${mentionId}', '${currentReason.replace(/'/g, "\\'")}')">Скасувати</button>
         </div>
     `;
-    
+
     // Replace the activity-reason div with edit container
     reasonDiv.parentNode.replaceChild(editContainer, reasonDiv);
-    
+
     // Focus the textarea and select all text
     const textarea = editContainer.querySelector('.add-reason-input');
     textarea.focus();
@@ -1850,7 +1954,7 @@ function cancelEditReason(mentionId, originalReason) {
         <span class="reason-text" id="reason-${mentionId}">${originalReason}</span>
         <button class="edit-reason-btn" onclick="editReason('${mentionId}', '${originalReason.replace(/'/g, "\\'")}')">✏️</button>
     `;
-    
+
     editContainer.parentNode.replaceChild(reasonDiv, editContainer);
 }
 
@@ -1865,7 +1969,7 @@ async function saveEditedReason(mentionId, newReason) {
         await db.collection('userMentions').doc(mentionId).update({
             reason: trimmedReason
         });
-        
+
         // Update display
         const editContainer = document.querySelector('.add-reason-container');
         if (editContainer) {
@@ -1875,10 +1979,10 @@ async function saveEditedReason(mentionId, newReason) {
                 <span class="reason-text" id="reason-${mentionId}">${trimmedReason}</span>
                 <button class="edit-reason-btn" onclick="editReason('${mentionId}', '${trimmedReason.replace(/'/g, "\\'")}')">✏️</button>
             `;
-            
+
             editContainer.parentNode.replaceChild(reasonDiv, editContainer);
         }
-        
+
         showNotification('Причину оновлено! ✅', 'success');
     } catch (error) {
         console.error('Error saving edited reason:', error);
@@ -1964,11 +2068,18 @@ function showTab(tabName) {
 
         if (savedView === 'global') {
             document.querySelector('#achievementsTab .switcher-btn:first-child').classList.add('active');
-        } else {
-            document.querySelector('#achievementsTab .switcher-btn:last-child').classList.add('active');
+        } else if (savedView === 'personal') {
+            document.querySelector('#achievementsTab .switcher-btn:nth-child(2)').classList.add('active');
+        } else if (savedView === 'rating') {
+            document.querySelector('#achievementsTab .switcher-btn:nth-child(3)').classList.add('active');
         }
 
-        loadAchievements();
+        // Load the appropriate content based on saved view
+        if (savedView === 'rating') {
+            loadUserRankings();
+        } else {
+            loadAchievements();
+        }
     } else if (tabName === 'minigames') {
         document.getElementById('minigamesTab').style.display = 'block';
         document.querySelectorAll('.tab-button')[3].classList.add('active');
