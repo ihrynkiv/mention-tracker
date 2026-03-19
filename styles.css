@@ -952,7 +952,6 @@ body {
     .user-info {
         position: static;
         text-align: center;
-        margin-top: 20px;
     }
 
     /* Hide tab text on mobile, show only icons */
@@ -1017,7 +1016,7 @@ body {
     .ranking-entry.top-three .rank {
         font-size: 1.4em;
     }
-    
+
     .ranking-entry .user-info {
         flex: 1;
         min-width: 0;
