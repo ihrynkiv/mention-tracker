@@ -1647,8 +1647,8 @@ async function loadUserRankings() {
         // Process personal achievements
         personalSnapshot.forEach(doc => {
             const data = doc.data();
-            const username = doc.id; // Personal achievements use username as document ID
-            if (data.unlockedAt || data.unlockedDate) {
+            const username = data.username; // Get username from document data, not doc ID
+            if (username && (data.unlockedAt || data.unlockedDate)) {
                 if (!userAchievements.has(username)) {
                     userAchievements.set(username, 0);
                 }
