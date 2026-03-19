@@ -466,17 +466,17 @@ body {
 .percentile-info {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
     text-align: center;
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.25);
 }
 
 .percentile-info p {
     margin: 0;
-    font-size: 1.1em;
-    font-weight: bold;
+    font-size: 0.95em;
+    font-weight: 600;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
@@ -956,6 +956,46 @@ body {
         flex-direction: column;
         align-items: stretch;
         gap: 15px;
+    }
+    
+    /* Mobile rankings improvements */
+    .percentile-info {
+        padding: 10px 15px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+    }
+    
+    .percentile-info p {
+        font-size: 0.9em;
+    }
+    
+    .ranking-entry {
+        padding: 12px 15px;
+        gap: 12px;
+        margin-bottom: 8px;
+        border-radius: 10px;
+    }
+    
+    .ranking-entry .rank {
+        font-size: 1.3em;
+        min-width: 40px;
+    }
+    
+    .ranking-entry.top-three .rank {
+        font-size: 1.5em;
+    }
+    
+    .username {
+        font-size: 1em;
+        margin-bottom: 1px;
+    }
+    
+    .achievement-count {
+        font-size: 0.85em;
+    }
+    
+    .rankings-list {
+        gap: 8px;
     }
 }
 
