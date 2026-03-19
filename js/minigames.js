@@ -61,12 +61,15 @@ async function setupMinigameTab() {
                 </div>
             </div>
 
-            <div class="challenge-card coming-soon">
+            <div class="challenge-card available">
                 <div class="challenge-icon">🧭</div>
                 <div class="challenge-info">
                     <h3>Лабіринт дня</h3>
                     <p>Допоможи Михайлу дістатитись Краківської</p>
-                    <div class="challenge-status">Незабаром...</div>
+                    <div class="challenge-buttons">
+                        <div class="challenge-status" onclick="startMazeGame()" id="mazeStatus">${mazeStatusHtml}</div>
+                        <div class="records-status" onclick="showMazeLeaderboard()">🏆 Рекорди</div>
+                    </div>
                 </div>
             </div>
             
