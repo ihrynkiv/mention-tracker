@@ -99,8 +99,8 @@ async function checkMazeCompletionAchievement() {
 
 // Maze game state
 let mazeGame = {
-    width: 15,
-    height: 15,
+    width: 31,
+    height: 31,
     maze: null,
     playerPos: null,
     targetPos: null,
@@ -214,7 +214,7 @@ async function startMazeGame() {
             </div>
             
             <div class="maze-container">
-                <canvas id="mazeCanvas" width="450" height="450"></canvas>
+                <canvas id="mazeCanvas" width="620" height="620"></canvas>
             </div>
             
             <div class="maze-controls">
@@ -306,7 +306,7 @@ function renderMaze() {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const cellSize = 30;
+    const cellSize = 20;
 
     // Clear canvas
     ctx.fillStyle = '#2c3e50';
@@ -319,35 +319,43 @@ function renderMaze() {
             const cellY = y * cellSize;
 
             if (mazeGame.maze[y][x] === 0) {
-                // Path
+                // Path - lighter color with thin borders
                 ctx.fillStyle = '#ecf0f1';
                 ctx.fillRect(cellX, cellY, cellSize, cellSize);
+                
+                // Add subtle grid lines for better visibility
+                ctx.strokeStyle = '#bdc3c7';
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(cellX, cellY, cellSize, cellSize);
+            } else {
+                // Walls - darker with thin borders for definition
+                ctx.fillStyle = '#34495e';
+                ctx.fillRect(cellX, cellY, cellSize, cellSize);
             }
-            // Walls remain dark (already filled)
         }
     }
 
-    // Draw target (Kraków - books)
+    // Draw target (Kraków - books) - bigger and more visible
     const targetX = mazeGame.targetPos.x * cellSize;
     const targetY = mazeGame.targetPos.y * cellSize;
     ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(targetX + 2, targetY + 2, cellSize - 4, cellSize - 4);
-    ctx.font = '20px Arial';
-    ctx.fillText('📚', targetX + 5, targetY + 22);
+    ctx.fillRect(targetX + 1, targetY + 1, cellSize - 2, cellSize - 2);
+    ctx.font = '16px Arial';
+    ctx.fillText('📚', targetX + 2, targetY + 15);
 
-    // Draw start (plane)
+    // Draw start (plane) - bigger and more visible
     ctx.fillStyle = '#3498db';
-    ctx.fillRect(2, 2, cellSize - 4, cellSize - 4);
-    ctx.font = '20px Arial';
-    ctx.fillText('✈️', 5, 22);
+    ctx.fillRect(1, 1, cellSize - 2, cellSize - 2);
+    ctx.font = '16px Arial';
+    ctx.fillText('✈️', 2, 15);
 
-    // Draw player (Mykhailo)
+    // Draw player (Mykhailo) - more prominent
     const playerX = mazeGame.playerPos.x * cellSize;
     const playerY = mazeGame.playerPos.y * cellSize;
     ctx.fillStyle = '#f39c12';
-    ctx.fillRect(playerX + 2, playerY + 2, cellSize - 4, cellSize - 4);
-    ctx.font = '20px Arial';
-    ctx.fillText('👦', playerX + 5, playerY + 22);
+    ctx.fillRect(playerX + 1, playerY + 1, cellSize - 2, cellSize - 2);
+    ctx.font = '16px Arial';
+    ctx.fillText('👦', playerX + 2, playerY + 15);
 }
 
 // Game timer
