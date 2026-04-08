@@ -899,99 +899,55 @@ async function loadTodayStatus() {
 
 async function loadDailyLegend() {
     try {
-        const today = new Date().toDateString();
-
-        // Get all mentions for today
-        const todayMentionsQuery = await db.collection('userMentions')
-            .where('date', '==', today)
-            .get();
-
-        const legendElement = document.getElementById('dailyLegend');
         const trackingContent = document.querySelector('.tracking-content');
 
-        if (!todayMentionsQuery.empty) {
-            // Show normal tracking UI
-            if (trackingContent) {
-                trackingContent.querySelector('h2').style.display = 'block';
-                trackingContent.querySelector('.yes-button').style.display = 'block';
-                trackingContent.querySelector('#cooldownMessage').style.display = 'block';
-            }
-
-            // Find the earliest mention by comparing timestamps
-            let earliestMention = null;
-            let earliestTimestamp = null;
-
-            todayMentionsQuery.forEach(doc => {
-                const data = doc.data();
-                const timestamp = data.timestamp;
-
-                if (timestamp && (!earliestTimestamp || timestamp.toMillis() < earliestTimestamp.toMillis())) {
-                    earliestTimestamp = timestamp;
-                    earliestMention = data;
-                }
-            });
-
-            if (earliestMention && earliestTimestamp) {
-                const firstMentioner = earliestMention.mentionedBy;
-                const clickTime = earliestTimestamp.toDate();
-                const timeString = clickTime.toLocaleTimeString('uk-UA', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                legendElement.innerHTML = `Легенда дня: ${firstMentioner} 👑<br>Згадано о ${timeString}`;
-            } else {
-                legendElement.textContent = 'Будь першою хто згадав сьогодні!';
-            }
-        } else {
-            // Hide tracking UI and show sad static message
-            if (trackingContent) {
-                trackingContent.querySelector('h2').style.display = 'none';
-                trackingContent.querySelector('.yes-button').style.display = 'none';
-                trackingContent.querySelector('#cooldownMessage').style.display = 'none';
-            }
-
-            // Show sad static message with total stats
-            await showSadStaticMessage();
+        // Always hide tracking UI and show sad static message
+        if (trackingContent) {
+            trackingContent.querySelector('h2').style.display = 'none';
+            trackingContent.querySelector('.yes-button').style.display = 'none';
+            trackingContent.querySelector('#cooldownMessage').style.display = 'none';
         }
+
+        // Show sad static message with total stats
+        await showSadStaticMessage();
 
     } catch (error) {
         console.error('Error loading daily legend:', error);
-        document.getElementById('dailyLegend').textContent = 'Будь першою хто згадав сьогодні!';
+        document.getElementById('dailyLegend').textContent = 'Помилка завантаження статистики...';
     }
 }
 
 async function showSadStaticMessage() {
     try {
         const legendElement = document.getElementById('dailyLegend');
-        
+
         // Get total streak count (how many days Mykhailo was mentioned)
         const mentionsSnapshot = await db.collection('mentions').get();
         const totalDays = mentionsSnapshot.size;
-        
+
         // Get the most active user overall
         const usersSnapshot = await db.collection('users')
             .orderBy('mentionCount', 'desc')
             .limit(1)
             .get();
-            
+
         let topUserName = 'ніхто';
         let topUserCount = 0;
-        
+
         if (!usersSnapshot.empty) {
             const topUserData = usersSnapshot.docs[0].data();
             topUserName = topUserData.username;
             topUserCount = topUserData.mentionCount || 0;
         }
-        
+
         legendElement.innerHTML = `
-            😢 Михайла згадували <strong>${totalDays}</strong> ${totalDays === 1 ? 'день' : totalDays < 5 ? 'дні' : 'днів'}.<br>
-            Найбільше згадувала <strong>${topUserName}</strong> - <strong>${topUserCount}</strong> ${topUserCount === 1 ? 'раз' : topUserCount < 5 ? 'рази' : 'разів'}
+            Михайла згадували <strong>${totalDays}</strong> ${totalDays === 1 ? 'день' : totalDays < 5 ? 'дні' : 'днів'}, але забули 6 квітня.<br>
+            Найбільше згадувала його <strong>${topUserName}</strong>
         `;
-        
+
     } catch (error) {
         console.error('Error showing sad static message:', error);
-        document.getElementById('dailyLegend').textContent = '😢 Сьогодні ніхто не згадав Михайла...';
+        document.getElementById('dailyLegend').textContent = 'Помилка завантаження статистики...';
     }
 }
 
@@ -1679,7 +1635,7 @@ async function loadUserRankings() {
                 // Find matching achievement definition to get icon
                 const achievementDef = GLOBAL_ACHIEVEMENTS.find(a => a.id === doc.id);
                 const icon = achievementDef ? achievementDef.icon : '🏆';
-                
+
                 achievement.unlockedBy.forEach(username => {
                     if (!userAchievements.has(username)) {
                         userAchievements.set(username, { count: 0, icons: [] });
@@ -1699,7 +1655,7 @@ async function loadUserRankings() {
                 // Find matching achievement definition to get icon
                 const achievementDef = PERSONAL_ACHIEVEMENTS.find(a => a.id === data.achievementId);
                 const icon = achievementDef ? achievementDef.icon : '🎯';
-                
+
                 if (!userAchievements.has(username)) {
                     userAchievements.set(username, { count: 0, icons: [] });
                 }
@@ -1711,10 +1667,10 @@ async function loadUserRankings() {
 
         // Convert to array and sort by achievement count
         const rankings = Array.from(userAchievements.entries())
-            .map(([username, userData]) => ({ 
-                username, 
-                count: userData.count, 
-                icons: userData.icons 
+            .map(([username, userData]) => ({
+                username,
+                count: userData.count,
+                icons: userData.icons
             }))
             .sort((a, b) => b.count - a.count);
 
@@ -1756,9 +1712,9 @@ async function loadUserRankings() {
             else if (rank === 3) rankIcon = '🥉';
 
             // Generate achievement icons HTML
-            const iconsHtml = user.icons.length > 0 ? 
+            const iconsHtml = user.icons.length > 0 ?
                 `<div class="achievement-icons">${user.icons.map(icon => `<span class="achievement-icon">${icon}</span>`).join('')}</div>` : '';
-            
+
             rankingsHTML += `
                 <div class="ranking-entry ${rank <= 3 ? 'top-three' : ''} ${isCurrentUser ? 'current-user' : ''}">
                     <div class="rank">${rankIcon}</div>
