@@ -94,6 +94,19 @@ body {
     position: relative;
 }
 
+.streak-counter {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #ff6b6b;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+}
+
 .tabs {
     display: flex;
     margin-bottom: 30px;
@@ -935,6 +948,13 @@ body {
     .yes-button {
         padding: 15px 30px;
         font-size: 20px;
+    }
+
+    .streak-counter {
+        position: static;
+        text-align: center;
+        margin-bottom: 20px;
+        display: inline-block;
     }
 
     .user-info {
