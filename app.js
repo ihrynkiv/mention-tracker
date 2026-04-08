@@ -383,18 +383,44 @@ async function loadUserStats() {
 
         let usersList = [];
 
-        // Get all-time stats only
-        const usersSnapshot = await db.collection('users')
-            .orderBy('mentionCount', 'desc')
-            .limit(10)
-            .get();
+        if (currentStatsMode === 'today') {
+            // Get today's mentions grouped by user
+            const today = new Date().toDateString();
+            const todayMentionsQuery = await db.collection('userMentions')
+                .where('date', '==', today)
+                .get();
 
-        usersSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.mentionCount > 0) {
-                usersList.push(userData);
-            }
-        });
+            const todayUserCounts = {};
+            todayMentionsQuery.forEach(doc => {
+                const data = doc.data();
+                const username = data.mentionedBy;
+
+                if (!todayUserCounts[username]) {
+                    todayUserCounts[username] = 0;
+                }
+                todayUserCounts[username]++;
+            });
+
+            // Convert to array and sort by today's count
+            usersList = Object.entries(todayUserCounts)
+                .map(([username, count]) => ({ username, mentionCount: count }))
+                .sort((a, b) => b.mentionCount - a.mentionCount)
+                .slice(0, 10);
+
+        } else {
+            // Get all-time stats
+            const usersSnapshot = await db.collection('users')
+                .orderBy('mentionCount', 'desc')
+                .limit(10)
+                .get();
+
+            usersSnapshot.forEach(doc => {
+                const userData = doc.data();
+                if (userData.mentionCount > 0) {
+                    usersList.push(userData);
+                }
+            });
+        }
 
         // Check if this request is still the most recent one
         if (requestId !== currentStatsRequestId) {
@@ -413,15 +439,15 @@ async function loadUserStats() {
         }
 
 
-        // Process users and get their unique days count
+        // Process users and get their personal streaks
         const userPromises = [];
 
         usersList.forEach(userData => {
-            userPromises.push(getUserUniqueDays(userData.username));
+            userPromises.push(getUserPersonalStreak(userData.username));
         });
 
-        // Wait for all unique days calculations to complete
-        const userUniqueDays = await Promise.all(userPromises);
+        // Wait for all streak calculations to complete
+        const userStreaks = await Promise.all(userPromises);
 
         // Check again if this request is still the most recent one
         if (requestId !== currentStatsRequestId) {
@@ -429,21 +455,23 @@ async function loadUserStats() {
             return;
         }
 
-        // Display users with their click counts and unique days
+        // Display users with their badges and streaks
         usersList.forEach((userData, index) => {
             const username = userData.username;
-            const uniqueDays = userUniqueDays[index];
+            const personalStreak = userStreaks[index];
+
+            const streakHtml = personalStreak > 0
+                ? `<span class="personal-streak">🔥${personalStreak}</span>`
+                : '';
 
             const statItem = document.createElement('div');
             statItem.className = 'user-stat-item';
             statItem.innerHTML = `
                 <div class="username-with-badges">
                     <span class="username">${username}</span>
+                    ${streakHtml}
                 </div>
-                <div class="user-stats-details">
-                    <span class="count">${userData.mentionCount} ${userData.mentionCount === 1 ? 'раз' : userData.mentionCount < 5 ? 'рази' : 'разів'}</span>
-                    <span class="unique-days">${uniqueDays} ${uniqueDays === 1 ? 'день' : uniqueDays < 5 ? 'дні' : 'днів'}</span>
-                </div>
+                <span class="count">${userData.mentionCount}</span>
             `;
             statsContainer.appendChild(statItem);
         });
@@ -1071,6 +1099,7 @@ async function checkDayGapAchievement() {
 let currentAchievementView = 'global';
 
 // Global variables for stats
+let currentStatsMode = 'allTime';
 let currentStatsRequestId = 0;
 
 // Global achievements system
@@ -1341,33 +1370,6 @@ async function getUserPersonalStreak(username) {
         return streak;
     } catch (error) {
         console.error('Error calculating user personal streak:', error);
-        return 0;
-    }
-}
-
-async function getUserUniqueDays(username) {
-    try {
-        // Get all mentions by this user
-        const userMentionsQuery = await db.collection('userMentions')
-            .where('mentionedBy', '==', username)
-            .get();
-
-        if (userMentionsQuery.empty) {
-            return 0;
-        }
-
-        // Get unique dates this user mentioned
-        const uniqueDates = new Set();
-        userMentionsQuery.forEach(doc => {
-            const data = doc.data();
-            if (data.date) {
-                uniqueDates.add(data.date);
-            }
-        });
-
-        return uniqueDates.size;
-    } catch (error) {
-        console.error('Error calculating user unique days:', error);
         return 0;
     }
 }
@@ -2054,10 +2056,19 @@ function showTab(tabName) {
         document.getElementById('statsTab').style.display = 'block';
         document.querySelectorAll('.tab-button')[1].classList.add('active');
 
-        // Set the correct button state (always allTime now)
+        // Set the correct button state based on saved stats mode
+        const savedStatsMode = localStorage.getItem('statsMode') || 'allTime';
+        currentStatsMode = savedStatsMode;
+
         document.querySelectorAll('.stats-switcher .switcher-btn').forEach(btn => {
-            btn.classList.add('active');
+            btn.classList.remove('active');
         });
+
+        if (savedStatsMode === 'allTime') {
+            document.querySelector('.stats-switcher .switcher-btn:first-child').classList.add('active');
+        } else {
+            document.querySelector('.stats-switcher .switcher-btn:last-child').classList.add('active');
+        }
 
         loadUserStats();
     } else if (tabName === 'achievements') {
@@ -2114,6 +2125,24 @@ function clearForm() {
     document.getElementById('password').value = '';
 }
 
+function switchStatsMode(mode) {
+    currentStatsMode = mode;
+    localStorage.setItem('statsMode', mode);
+
+    // Update button states
+    document.querySelectorAll('.stats-switcher .switcher-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    if (mode === 'allTime') {
+        document.querySelector('.stats-switcher .switcher-btn:first-child').classList.add('active');
+    } else {
+        document.querySelector('.stats-switcher .switcher-btn:last-child').classList.add('active');
+    }
+
+    // Reload user stats with new mode
+    loadUserStats();
+}
 
 function checkAuthState() {
     const savedUser = localStorage.getItem('currentUser');
