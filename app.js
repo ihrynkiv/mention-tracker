@@ -907,8 +907,16 @@ async function loadDailyLegend() {
             .get();
 
         const legendElement = document.getElementById('dailyLegend');
+        const trackingContent = document.querySelector('.tracking-content');
 
         if (!todayMentionsQuery.empty) {
+            // Show normal tracking UI
+            if (trackingContent) {
+                trackingContent.querySelector('h2').style.display = 'block';
+                trackingContent.querySelector('.yes-button').style.display = 'block';
+                trackingContent.querySelector('#cooldownMessage').style.display = 'block';
+            }
+
             // Find the earliest mention by comparing timestamps
             let earliestMention = null;
             let earliestTimestamp = null;
@@ -936,12 +944,54 @@ async function loadDailyLegend() {
                 legendElement.textContent = 'Будь першою хто згадав сьогодні!';
             }
         } else {
-            legendElement.textContent = 'Будь першою хто згадав сьогодні!';
+            // Hide tracking UI and show sad static message
+            if (trackingContent) {
+                trackingContent.querySelector('h2').style.display = 'none';
+                trackingContent.querySelector('.yes-button').style.display = 'none';
+                trackingContent.querySelector('#cooldownMessage').style.display = 'none';
+            }
+
+            // Show sad static message with total stats
+            await showSadStaticMessage();
         }
 
     } catch (error) {
         console.error('Error loading daily legend:', error);
         document.getElementById('dailyLegend').textContent = 'Будь першою хто згадав сьогодні!';
+    }
+}
+
+async function showSadStaticMessage() {
+    try {
+        const legendElement = document.getElementById('dailyLegend');
+        
+        // Get total streak count (how many days Mykhailo was mentioned)
+        const mentionsSnapshot = await db.collection('mentions').get();
+        const totalDays = mentionsSnapshot.size;
+        
+        // Get the most active user overall
+        const usersSnapshot = await db.collection('users')
+            .orderBy('mentionCount', 'desc')
+            .limit(1)
+            .get();
+            
+        let topUserName = 'ніхто';
+        let topUserCount = 0;
+        
+        if (!usersSnapshot.empty) {
+            const topUserData = usersSnapshot.docs[0].data();
+            topUserName = topUserData.username;
+            topUserCount = topUserData.mentionCount || 0;
+        }
+        
+        legendElement.innerHTML = `
+            😢 Михайла згадували <strong>${totalDays}</strong> ${totalDays === 1 ? 'день' : totalDays < 5 ? 'дні' : 'днів'}.<br>
+            Найбільше згадувала <strong>${topUserName}</strong> - <strong>${topUserCount}</strong> ${topUserCount === 1 ? 'раз' : topUserCount < 5 ? 'рази' : 'разів'}
+        `;
+        
+    } catch (error) {
+        console.error('Error showing sad static message:', error);
+        document.getElementById('dailyLegend').textContent = '😢 Сьогодні ніхто не згадав Михайла...';
     }
 }
 
