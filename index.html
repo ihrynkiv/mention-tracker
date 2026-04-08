@@ -46,7 +46,14 @@
 
             <div class="tab-content" id="trackingTab">
                 <div class="tracking-content">
-                    <div id="dailyLegend" class="daily-legend">Завантаження...</div>
+                    <h2>Згадали Михайла?</h2>
+                    <button class="yes-button" onclick="recordMention()">Так! 🎉</button>
+                    <div id="cooldownMessage" class="cooldown-message" style="display: none;">
+                        Це чудово, що ви згадуєте Михайла так часто, але рахуємо не більше однієї згадки за 5 хвилин ⏰
+                    </div>
+                    <div id="dailyLegend" class="daily-legend">Будь першою хто згадав сьогодні!</div>
+                    <div id="fireworks" class="fireworks-container"></div>
+                    <div id="successMessage" class="success-message"></div>
                 </div>
             </div>
 
