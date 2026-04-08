@@ -871,15 +871,6 @@ async function loadTodayStatus() {
 
 async function loadDailyLegend() {
     try {
-        const trackingContent = document.querySelector('.tracking-content');
-
-        // Always hide tracking UI and show sad static message
-        if (trackingContent) {
-            trackingContent.querySelector('h2').style.display = 'none';
-            trackingContent.querySelector('.yes-button').style.display = 'none';
-            trackingContent.querySelector('#cooldownMessage').style.display = 'none';
-        }
-
         // Show sad static message with total stats
         await showSadStaticMessage();
 
